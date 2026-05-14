@@ -245,15 +245,7 @@ textarea { resize: vertical; min-height: 78px; }
       <div class="cond" id="iw">
         <div class="fg" style="margin-bottom:0"><label class="fl">Importo preventivo (euro) <span class="r">*</span></label><input type="number" id="imp" placeholder="Es. 2400" min="0"/></div>
       </div>
-      <div class="fg">
-        <label class="fl">Carica il preventivo <span class="o">(opzionale ma consigliato)</span></label>
-        <div class="fupload">
-          <input type="file" id="fi" accept=".pdf,.jpg,.jpeg,.png"/>
-          <div class="fi">📎</div>
-          <div class="ft"><strong>Tocca per caricare</strong> o trascina qui<br>PDF, JPG, PNG — max 10MB</div>
-          <div class="fname" id="fn"></div>
-        </div>
-      </div>
+
       <hr class="divider"/>
       <div class="fg"><label class="fl">WhatsApp / Telefono <span class="r">*</span></label><input type="tel" id="tel" placeholder="+39 333 000 0000" required/></div>
       <div class="fg"><label class="fl">Note aggiuntive <span class="o">(opzionale)</span></label><textarea id="note" placeholder="Dettagli: stato impianto, urgenza, domande specifiche…"></textarea></div>
@@ -288,10 +280,7 @@ textarea { resize: vertical; min-height: 78px; }
 function toggleImporto() {
   document.getElementById('iw').classList.toggle('on', document.getElementById('rsi').checked);
 }
-document.getElementById('fi').addEventListener('change', function() {
-  var fn = document.getElementById('fn');
-  if (this.files && this.files[0]) { fn.textContent = this.files[0].name; fn.style.display = 'block'; }
-});
+
 function inviaForm() {
   var nome = document.getElementById('nome').value.trim();
   var prov = document.getElementById('prov').value.trim();
