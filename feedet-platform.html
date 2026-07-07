@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Feedet Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@200;300;400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blu:#08121e;--blu2:#0d1f35;--blu3:#152840;
+  --accent:#2a7fff;--oro:#c9a84c;--verde:#28b464;--rosso:#e05252;--viola:#8b5cf6;--arancio:#f0913a;
+  --testo:#e8edf4;--testo2:#8a9bb0;--bordo:rgba(255,255,255,0.08);
+  --card:#ffffff;--sfondo:#f0f3f8;--td:#1a2535;--tm:#6b7a90;--tl:#8a9bb0;--bl:#dde3ed;--sl:#f6f8fc;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Mono',monospace;background:var(--sfondo);color:var(--td);min-height:100vh;overflow-x:hidden}
+
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--blu);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:100;border-bottom:1px solid var(--bordo)}
+.logo-top{font-family:'Crimson Pro',serif;font-weight:200;font-size:22px;letter-spacing:.1em;color:var(--testo)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.badge-role{font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:20px;text-transform:uppercase;display:none}
+.badge-role.show{display:block}
+.badge-admin-role{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--oro)}
+.badge-amb-role{background:rgba(42,127,255,.15);border:1px solid rgba(42,127,255,.3);color:var(--accent)}
+.btn-logout{font-family:'DM Mono',monospace;font-size:10px;color:var(--testo2);background:transparent;border:1px solid var(--bordo);border-radius:6px;padding:5px 11px;cursor:pointer;display:none}
+.btn-logout.show{display:block}
+.notif-badge{background:var(--rosso);color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:none;align-items:center;justify-content:center;font-weight:700}
+.notif-badge.show{display:flex}
+
+.main{padding-top:52px;min-height:100vh}
+.view{display:none}
+.view.active{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.page{padding:16px 16px 80px}
+
+/* LOGIN */
+.login-wrap{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--blu)}
+.login-box{width:100%;max-width:380px}
+.login-title{font-family:'Crimson Pro',serif;font-weight:200;font-size:32px;color:var(--testo);margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--testo2);margin-bottom:28px}
+.role-toggle{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--blu3);padding:4px;border-radius:10px;margin-bottom:20px}
+.role-btn{padding:9px;border-radius:7px;border:none;background:transparent;color:var(--testo2);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s}
+.role-btn.active{background:var(--accent);color:white}
+
+/* FIELDS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:9px;letter-spacing:.12em;color:var(--tl);margin-bottom:5px;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;border-radius:10px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;-webkit-appearance:none;border:1.5px solid var(--bl);background:white;color:var(--td)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field input::placeholder,.field textarea::placeholder{color:var(--tl);opacity:.6}
+.field textarea{resize:none;line-height:1.5}
+.field select option{background:white}
+.field-dark input,.field-dark select{background:var(--blu3);border:1px solid var(--bordo);color:var(--testo)}
+.field-dark input::placeholder{color:var(--testo2);opacity:.5}
+.field-dark label{color:var(--testo2)}
+.field-dark input:focus,.field-dark select:focus{border-color:var(--accent)}
+.field-err input,.field-err select{border-color:var(--rosso)!important}
+.field-err-msg{font-size:10px;color:var(--rosso);margin-top:4px;display:none}
+.field-err .field-err-msg{display:block}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-2 .field{margin-bottom:0}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;cursor:pointer;transition:all .2s;text-align:center}
+.btn+.btn{margin-top:8px}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:active{opacity:.85}
+.btn-danger{background:rgba(224,82,82,.1);color:var(--rosso);border:1px solid rgba(224,82,82,.2)}
+.btn-ghost{background:transparent;color:var(--tm);border:1.5px solid var(--bl)}
+.btn-verde{background:rgba(40,180,100,.1);color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+.btn-wa{background:#25d366;color:white;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-sm{padding:7px 14px;font-size:10px;width:auto;border-radius:8px;margin-top:0}
+.link-text{text-align:center;margin-top:16px;font-size:11px;color:var(--testo2)}
+.link-text a{color:var(--accent);text-decoration:none;cursor:pointer}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);position:relative}
+.stat-num{font-family:'Crimson Pro',serif;font-weight:200;font-size:38px;line-height:1;color:var(--accent);margin-bottom:3px}
+.stat-num.v{color:var(--verde)}
+.stat-num.o{color:var(--oro)}
+.stat-num.r{color:var(--rosso)}
+.stat-label{font-size:10px;letter-spacing:.08em;color:var(--tl);text-transform:uppercase}
+.stat-alert{position:absolute;top:10px;right:10px;background:var(--rosso);color:white;border-radius:50%;width:20px;height:20px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* TABS */
+.tabs{display:flex;gap:0;background:white;border-radius:12px;padding:4px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow-x:auto}
+.tab{flex:1;min-width:60px;padding:8px 4px;border-radius:9px;border:none;background:transparent;color:var(--tl);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.04em;cursor:pointer;transition:all .2s;white-space:nowrap;position:relative}
+.tab.active{background:var(--blu);color:white}
+.tab-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--rosso);border-radius:50%;display:none}
+.tab-dot.show{display:block}
+
+.sec-title{font-size:9px;letter-spacing:.14em;color:var(--tl);text-transform:uppercase;margin:18px 0 10px;padding-bottom:7px;border-bottom:1.5px solid var(--bl)}
+
+/* CATEGORIA BADGE */
+.cat-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.cat-CUS{background:rgba(42,127,255,.1);color:var(--accent);border:1px solid rgba(42,127,255,.2)}
+.cat-IMM{background:rgba(139,92,246,.1);color:var(--viola);border:1px solid rgba(139,92,246,.2)}
+.cat-AMM{background:rgba(201,168,76,.1);color:var(--oro);border:1px solid rgba(201,168,76,.2)}
+.cat-GEO{background:rgba(240,145,58,.1);color:var(--arancio);border:1px solid rgba(240,145,58,.2)}
+.cat-ART{background:rgba(40,180,100,.1);color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+.cat-ALT{background:rgba(138,155,176,.1);color:var(--tl);border:1px solid rgba(138,155,176,.2)}
+
+.stato-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+.stato-ricontattare{background:rgba(224,82,82,.1);color:var(--rosso);border:1px solid rgba(224,82,82,.2)}
+.stato-interessato{background:rgba(201,168,76,.1);color:var(--oro);border:1px solid rgba(201,168,76,.2)}
+.stato-attesa{background:rgba(42,127,255,.1);color:var(--accent);border:1px solid rgba(42,127,255,.2)}
+.stato-convertito{background:rgba(40,180,100,.1);color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+
+/* AMBASSADOR CARD */
+.amb-card{background:white;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ac-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.ac-nome{font-size:15px;font-weight:500;color:var(--td);margin-bottom:3px}
+.ac-zona{font-size:11px;color:var(--tl)}
+.ac-right{text-align:right}
+.ac-codice{font-family:'Crimson Pro',serif;font-size:18px;color:var(--accent);letter-spacing:.08em;background:rgba(42,127,255,.08);padding:4px 10px;border-radius:8px;white-space:nowrap;display:block;margin-bottom:5px}
+.ac-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.ac-stat{text-align:center;background:var(--sl);border-radius:8px;padding:8px 4px}
+.ac-stat-num{font-family:'Crimson Pro',serif;font-size:22px;color:var(--accent);line-height:1}
+.ac-stat-num.v{color:var(--verde)}
+.ac-stat-num.o{color:var(--oro)}
+.ac-stat-label{font-size:9px;color:var(--tl);letter-spacing:.04em;margin-top:2px}
+.ac-actions{display:flex;gap:6px}
+.act{flex:1;padding:9px 4px;border-radius:8px;border:none;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .2s;text-align:center}
+.act-mod{background:#f0f4ff;color:var(--accent);border:1px solid rgba(42,127,255,.15)}
+.act-sosp{background:#fff8e6;color:var(--oro);border:1px solid rgba(201,168,76,.2)}
+.act-riatt{background:#edfff4;color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+.act-del{background:#fff0f0;color:var(--rosso);border:1px solid rgba(224,82,82,.15)}
+
+.badge{display:inline-block;font-size:9px;padding:3px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+.badge-attivo{background:rgba(40,180,100,.1);color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+.badge-sospeso{background:rgba(224,82,82,.1);color:var(--rosso);border:1px solid rgba(224,82,82,.2)}
+.badge-pendente{background:rgba(201,168,76,.1);color:var(--oro);border:1px solid rgba(201,168,76,.2)}
+
+/* PROSPECT CARD */
+.prospect-card{background:white;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.pc-nome{font-size:14px;font-weight:500;color:var(--td);margin-bottom:3px}
+.pc-info{font-size:11px;color:var(--tm);line-height:1.8;margin-bottom:8px}
+.pc-info span{color:var(--td)}
+.pc-note{font-size:11px;color:var(--tl);background:var(--sl);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.5;font-style:italic;border-left:3px solid var(--bl)}
+.pc-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* PENDENTE CARD */
+.pend-card{background:white;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pend-nome{font-size:15px;font-weight:500;margin-bottom:8px}
+.pend-info{font-size:12px;color:var(--tm);line-height:1.9;margin-bottom:12px}
+.pend-info span{color:var(--td)}
+.codice-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.codice-row input{flex:1;background:var(--sl);border:1.5px solid var(--bl);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:13px;color:var(--td);outline:none;letter-spacing:.06em;text-transform:uppercase}
+.codice-row input:focus{border-color:var(--accent)}
+.btn-ok{padding:10px 16px;background:var(--verde);border:none;border-radius:8px;color:white;font-size:16px;cursor:pointer}
+.btn-no{padding:10px 14px;background:#fff0f0;border:1px solid rgba(224,82,82,.2);border-radius:8px;color:var(--rosso);font-size:14px;cursor:pointer}
+
+/* LEAD CARD */
+.lead-card{background:white;border-radius:16px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.07);overflow:hidden}
+.lc-header{padding:14px 16px;border-bottom:1.5px solid var(--sfondo)}
+.lc-header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.lc-tipo{font-size:15px;font-weight:500;color:var(--td)}
+.lc-id{font-size:10px;color:var(--tl)}
+.lc-meta{font-size:12px;color:var(--tm);margin-bottom:2px}
+.lc-meta span{color:var(--td);font-weight:500}
+.lc-stato-badge{display:inline-block;font-size:9px;padding:4px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.lc-fonte{display:inline-block;font-size:9px;padding:2px 8px;border-radius:20px;background:var(--sl);color:var(--tl);border:1px solid var(--bl);margin-left:6px}
+.lc-note-preview{font-size:11px;color:var(--tl);background:var(--sl);border-radius:8px;padding:8px 12px;margin-top:8px;border-left:3px solid var(--bl);font-style:italic;line-height:1.5}
+
+.lc-section{padding:12px 16px;border-bottom:1.5px solid var(--sfondo)}
+.lc-section:last-child{border-bottom:none}
+.lc-section-title{font-size:9px;letter-spacing:.12em;color:var(--tl);text-transform:uppercase;margin-bottom:10px}
+
+.cifre-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.cifra-box{background:var(--sl);border-radius:10px;padding:10px 12px}
+.cifra-label{font-size:9px;letter-spacing:.08em;color:var(--tl);text-transform:uppercase;margin-bottom:3px}
+.cifra-val{font-family:'Crimson Pro',serif;font-size:24px;font-weight:300;line-height:1}
+.cifra-val.dark{color:var(--td)}
+.cifra-val.v{color:var(--verde)}
+.cifra-val.a{color:var(--accent)}
+.cifra-val.o{color:var(--oro)}
+.cifra-full{background:var(--sl);border-radius:10px;padding:10px 12px;margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.cifra-full .cifra-label{margin-bottom:0}
+
+.step-list{display:flex;flex-direction:column;gap:4px}
+.step-btn{padding:10px 14px;border-radius:9px;font-size:11px;border:1.5px solid var(--bl);background:white;color:var(--tm);cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px}
+.step-btn.done{background:#f0fff6;border-color:rgba(40,180,100,.25);color:var(--verde)}
+.step-btn.done::before{content:'✓';width:18px;height:18px;background:var(--verde);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.step-btn.current{background:#f0f4ff;border-color:rgba(42,127,255,.3);color:var(--accent)}
+.step-btn.current::before{content:'●';width:18px;height:18px;border:2px solid var(--accent);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;animation:pulse 2s infinite}
+.step-btn.todo::before{content:'';width:18px;height:18px;border:2px solid var(--bl);border-radius:50%;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(42,127,255,.25)}50%{box-shadow:0 0 0 4px rgba(42,127,255,.08)}}
+
+.link-allegati{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(42,127,255,.06);border:1.5px solid rgba(42,127,255,.15);border-radius:10px;text-decoration:none;color:var(--accent);font-size:12px;margin-bottom:8px}
+.link-allegati-vuoto{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sl);border:1.5px solid var(--bl);border-radius:10px;color:var(--tl);font-size:12px;margin-bottom:8px}
+
+.pag-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--sfondo)}
+.pag-row:last-child{border-bottom:none}
+.pag-label{font-size:11px;color:var(--tm)}
+.pag-val{font-size:12px;color:var(--td);font-weight:500}
+.pag-val.fatto{color:var(--verde)}
+.pag-val.attesa{color:var(--oro)}
+
+.lc-actions{padding:12px 16px;background:var(--sl);display:flex;gap:8px}
+
+/* STORICO PAGAMENTI */
+.storico-card{background:white;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.storico-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--sfondo);font-size:12px}
+.storico-row:last-child{border-bottom:none}
+.storico-tipo{color:var(--td)}
+.storico-data{color:var(--tl);font-size:10px}
+.storico-importo{color:var(--verde);font-family:'Crimson Pro',serif;font-size:16px}
+
+/* AMB DASH */
+.amb-header{background:var(--blu);padding:24px 16px 20px}
+.amb-nome{font-family:'Crimson Pro',serif;font-weight:200;font-size:28px;color:var(--testo);margin-bottom:2px}
+.amb-codice{font-size:12px;color:var(--testo2)}
+.amb-codice span{font-family:'Crimson Pro',serif;font-size:17px;color:var(--accent);letter-spacing:.1em}
+.soldi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.soldi-card{background:white;border-radius:14px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.soldi-num{font-family:'Crimson Pro',serif;font-weight:200;font-size:36px;line-height:1;margin-bottom:4px}
+.soldi-num.inc{color:var(--verde)}
+.soldi-num.att{color:var(--oro)}
+
+.track-card{background:white;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.track-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.track-tipo{font-size:13px;font-weight:500}
+.track-id{font-size:10px;color:var(--tl)}
+.ts{display:flex;align-items:flex-start;gap:10px;padding:5px 0;position:relative}
+.ts:not(:last-child)::after{content:'';position:absolute;left:8px;top:20px;bottom:-5px;width:1px;background:var(--bl)}
+.ts-dot{width:17px;height:17px;border-radius:50%;border:2px solid var(--bl);background:var(--sl);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px}
+.ts-dot.done{background:var(--accent);border-color:var(--accent);color:white}
+.ts-dot.done::after{content:'✓'}
+.ts-dot.cur{border-color:var(--accent);background:white;animation:pulse 2s infinite}
+.ts-dot.cur::after{content:'●';color:var(--accent);font-size:7px}
+.ts-label{font-size:12px;color:var(--tl);padding-top:1px;line-height:1.3}
+.ts-label.done{color:var(--td)}
+.ts-label.cur{color:var(--accent)}
+
+.ruolo-card{background:white;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:12px}
+.ruolo-ic{font-size:20px;flex-shrink:0}
+.ruolo-titolo{font-size:11px;font-weight:500;color:var(--td);margin-bottom:3px}
+.ruolo-testo{font-size:12px;color:var(--tm);line-height:1.6}
+
+/* ONBOARDING */
+.onboarding{background:linear-gradient(135deg,rgba(42,127,255,.08),rgba(42,127,255,.03));border:1.5px solid rgba(42,127,255,.15);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px}
+.onboarding-icon{font-size:36px;margin-bottom:10px}
+.onboarding-title{font-family:'Crimson Pro',serif;font-size:20px;color:var(--td);margin-bottom:6px}
+.onboarding-text{font-size:12px;color:var(--tm);line-height:1.7}
+
+/* REGISTRAZIONE */
+.reg-wrap{background:var(--sfondo);padding:20px 16px 80px}
+.reg-box{background:white;border-radius:16px;padding:20px 16px}
+.reg-title{font-family:'Crimson Pro',serif;font-weight:200;font-size:26px;margin-bottom:4px}
+.reg-sub{font-size:11px;color:var(--tm);margin-bottom:18px;line-height:1.6}
+.offerta{background:linear-gradient(135deg,rgba(42,127,255,.07),rgba(42,127,255,.03));border:1.5px solid rgba(42,127,255,.15);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:var(--tm);line-height:1.6}
+.offerta strong{color:var(--accent);font-size:14px}
+.termini-box{background:var(--sl);border:1.5px solid var(--bl);border-radius:10px;padding:14px;max-height:180px;overflow-y:auto;margin-bottom:12px;font-size:11px;color:var(--tm);line-height:1.8}
+.termini-box h4{color:var(--td);font-size:10px;letter-spacing:.06em;margin:10px 0 3px;font-weight:500}
+.termini-box h4:first-child{margin-top:0}
+.check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.check-row input{width:18px;height:18px;margin-top:1px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.check-row span{font-size:12px;color:var(--tm);line-height:1.5}
+
+.pend-wrap{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;padding:40px 20px;background:var(--sfondo)}
+.pend-box{text-align:center;max-width:340px}
+.pend-icon{font-size:52px;margin-bottom:16px}
+.pend-title{font-family:'Crimson Pro',serif;font-weight:300;font-size:28px;margin-bottom:8px}
+.pend-text{font-size:13px;color:var(--tm);line-height:1.7;margin-bottom:28px}
+
+/* FILTRI */
+.filtri-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.filtro-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--bl);background:white;color:var(--tl);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.filtro-btn.active{background:var(--blu);color:white;border-color:var(--blu)}
+
+/* IMPOSTAZIONI */
+.impost-section{background:white;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.impost-title{font-size:11px;font-weight:500;color:var(--td);margin-bottom:14px;letter-spacing:.04em}
+.impost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--sfondo);font-size:12px;color:var(--tm)}
+.impost-row:last-child{border-bottom:none}
+.impost-row button{font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;border-radius:6px;border:1.5px solid var(--bl);background:white;color:var(--accent);cursor:pointer}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:white;border-radius:20px 20px 0 0;padding:22px 16px 40px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--bl);border-radius:2px;margin:0 auto 18px}
+.modal-title{font-family:'Crimson Pro',serif;font-weight:300;font-size:22px;color:var(--td);margin-bottom:4px}
+.modal-sub{font-size:11px;color:var(--tm);margin-bottom:18px}
+.modal-actions{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:white;border-radius:18px;padding:24px 20px;width:100%;max-width:340px;text-align:center}
+.confirm-title{font-family:'Crimson Pro',serif;font-weight:300;font-size:22px;margin-bottom:8px}
+.confirm-text{font-size:12px;color:var(--tm);line-height:1.6;margin-bottom:22px}
+.confirm-btns{display:flex;flex-direction:column;gap:8px}
+
+.fab{position:fixed;bottom:24px;right:16px;width:54px;height:54px;background:var(--accent);border:none;border-radius:50%;color:white;font-size:26px;cursor:pointer;box-shadow:0 4px 18px rgba(42,127,255,.4);z-index:90;display:none;align-items:center;justify-content:center;line-height:1}
+.fab.show{display:flex}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--blu);border-radius:10px;padding:11px 18px;font-size:12px;color:var(--testo);z-index:999;opacity:0;transition:all .3s ease;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.empty{text-align:center;padding:32px 20px;color:var(--tl);font-size:12px;line-height:1.7}
+
+.stato-ricezione{background:rgba(42,127,255,.1);color:var(--accent);border:1px solid rgba(42,127,255,.2)}
+.stato-analisi{background:rgba(139,92,246,.1);color:var(--viola);border:1px solid rgba(139,92,246,.2)}
+.stato-contatto{background:rgba(201,168,76,.1);color:var(--oro);border:1px solid rgba(201,168,76,.2)}
+.stato-esecuzione{background:rgba(240,145,58,.1);color:var(--arancio);border:1px solid rgba(240,145,58,.2)}
+.stato-pagamento{background:rgba(40,180,100,.1);color:var(--verde);border:1px solid rgba(40,180,100,.2)}
+.stato-rifiutato{background:rgba(224,82,82,.1);color:var(--rosso);border:1px solid rgba(224,82,82,.2)}
+
+.error-box{background:#fff0f0;border:1.5px solid rgba(224,82,82,.25);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--rosso);margin-bottom:14px;display:none;line-height:1.5}
+.error-box.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-top">feedet</div>
+  <div class="topbar-right">
+    <div class="notif-badge" id="notifBadge">0</div>
+    <div class="badge-role" id="badgeRole"></div>
+    <button class="btn-logout" id="btnLogout" onclick="logout()">ESCI</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LOGIN -->
+  <div class="view active" id="viewLogin">
+    <div class="login-wrap">
+      <div class="login-box">
+        <div class="login-title">Accedi</div>
+        <div class="login-sub">Seleziona il tuo ruolo</div>
+        <div class="role-toggle">
+          <button class="role-btn active" id="roleAdminBtn" onclick="setRole('admin')">Admin</button>
+          <button class="role-btn" id="roleAmbBtn" onclick="setRole('ambassador')">Ambassador</button>
+        </div>
+        <div class="error-box" id="loginError"></div>
+        <div class="field field-dark"><label>Username / Codice</label><input type="text" id="loginUser" placeholder="es. alessandro" autocapitalize="none"/></div>
+        <div class="field field-dark"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="btn btn-primary" onclick="doLogin()">ENTRA</button>
+        <div class="link-text">Vuoi diventare ambassador? <a onclick="showView('viewRegistrazione')">Registrati →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRAZIONE -->
+  <div class="view" id="viewRegistrazione">
+    <div class="reg-wrap">
+      <div class="reg-box">
+        <div class="reg-title">Diventa Ambassador</div>
+        <div class="reg-sub">Porta clienti a Feedet e guadagna una commissione su ogni lavoro completato. Zero impegno, zero rischio.</div>
+        <div class="offerta">💰 Offerta lancio: <strong>25% di commissione</strong> su ogni lavoro chiuso — valida fino al 31/12/2025</div>
+        <div class="error-box" id="regError"></div>
+        <div class="field"><label>Nome</label><input type="text" id="regNome" placeholder="Mario"/></div>
+        <div class="field"><label>Cognome</label><input type="text" id="regCognome" placeholder="Rossi"/></div>
+        <div class="field"><label>Di cosa ti occupi?</label>
+          <select id="regCategoria">
+            <option value="">Seleziona categoria</option>
+            <option value="CUS">Custode / Portiere</option>
+            <option value="IMM">Agente Immobiliare</option>
+            <option value="AMM">Amministratore di Condominio</option>
+            <option value="GEO">Geometra / Tecnico</option>
+            <option value="ART">Artigiano</option>
+            <option value="ALT">Altro</option>
+          </select>
+        </div>
+        <div class="field"><label>Zona / Area operativa</label><input type="text" id="regZona" placeholder="es. Milano Zona 6, Lodi..."/></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" id="regWhatsapp" placeholder="+39 333 000 0000"/></div>
+        <div class="field"><label>IBAN (obbligatorio per i pagamenti)</label><input type="text" id="regIban" placeholder="IT60 X054 2811 1010 0000 0123 456"/></div>
+        <div class="field"><label>Password</label><input type="password" id="regPass" placeholder="Min. 6 caratteri"/></div>
+        <div class="field"><label>Conferma password</label><input type="password" id="regPass2" placeholder="Ripeti la password"/></div>
+        <div class="sec-title">Termini di collaborazione</div>
+        <div class="termini-box">
+          <h4>CHI SEI PER NOI</h4>Sei un ambassador Feedet. Il tuo ruolo è segnalare potenziali clienti. Non sei un dipendente Feedet.
+          <h4>COSA FAI</h4>Segnali clienti tramite il tuo codice personale. Non devi vendere, non devi fare promesse.
+          <h4>COSA NON FAI</h4>— Non fai promesse a nome di Feedet<br/>— Non garantisci risparmi o risultati<br/>— Non tratti denaro per conto di Feedet<br/>— Non usi il nome Feedet per scopi personali
+          <h4>COME GUADAGNI</h4>Ricevi il 25% della commissione netta Feedet per ogni lavoro completato e pagato. Bonifico bancario entro 30 giorni dal pagamento del cliente.
+          <h4>OFFERTA A TEMPO</h4>Il 25% è valido fino al 31/12/2025. Modifiche con preavviso di 30 giorni.
+          <h4>CODICE PERSONALE</h4>Personale e non cedibile. Uso improprio = revoca immediata.
+          <h4>RISOLUZIONE</h4>Entrambe le parti possono uscire in qualsiasi momento. Compensi maturati sempre corrisposti.
+        </div>
+        <div class="check-row"><input type="checkbox" id="checkTermini"/><span>Ho letto e accetto i termini di collaborazione Feedet</span></div>
+        <button class="btn btn-primary" onclick="doRegistrazione()">INVIA RICHIESTA</button>
+        <div class="link-text" style="margin-top:14px">Hai già un codice? <a onclick="showView('viewLogin');setRole('ambassador')">Accedi</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN ATTESA -->
+  <div class="view" id="viewPendente">
+    <div class="pend-wrap">
+      <div class="pend-box">
+        <div class="pend-icon">⏳</div>
+        <div class="pend-title">Richiesta inviata</div>
+        <div class="pend-text">Ti contatteremo su WhatsApp entro <strong>1-2 giorni lavorativi</strong> per assegnarti il codice ambassador.<br/><br/>Per fare login usa il tuo <strong>numero WhatsApp</strong> come username e la password che hai scelto.</div>
+        <a class="btn btn-wa" href="https://wa.me/393793547044?text=Ciao%20Feedet%2C%20ho%20inviato%20la%20richiesta%20per%20diventare%20ambassador." target="_blank">💬 &nbsp;SCRIVI SU WHATSAPP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD AMBASSADOR -->
+  <div class="view" id="viewDashAmb">
+    <div class="amb-header">
+      <div class="amb-nome">Ciao, <span id="aNome">Mario</span></div>
+      <div class="amb-codice">Codice: <span id="aCodice">—</span></div>
+    </div>
+    <div class="page" style="padding-top:16px">
+      <div id="aOnboarding"></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="aLeads">0</div><div class="stat-label">Lead inviati</div></div>
+        <div class="stat-card"><div class="stat-num v" id="aChiusi">0</div><div class="stat-label">Lavori chiusi</div></div>
+      </div>
+      <div class="soldi-row">
+        <div class="soldi-card"><div class="soldi-num inc" id="aIncassato">€0</div><div class="stat-label">Già incassato</div></div>
+        <div class="soldi-card"><div class="soldi-num att" id="aDaIncassare">€0</div><div class="stat-label">In arrivo</div></div>
+      </div>
+      <div class="sec-title">I tuoi clienti</div>
+      <div id="aLeadList"></div>
+      <div class="sec-title">Impostazioni profilo</div>
+      <div class="impost-section">
+        <div class="impost-row"><span>Cambia password</span><button onclick="openModal('modalCambiaPass')">Modifica</button></div>
+        <div class="impost-row"><span>Aggiorna IBAN</span><button onclick="openModal('modalAggiornaIban')">Modifica</button></div>
+        <div class="impost-row"><span>Aggiorna WhatsApp</span><button onclick="openModal('modalAggiornaWa')">Modifica</button></div>
+      </div>
+      <div class="sec-title">Assistenza</div>
+      <a class="btn btn-wa" href="https://wa.me/393793547044" target="_blank">💬 &nbsp;CONTATTA FEEDET SU WHATSAPP</a>
+      <div class="sec-title">Il tuo ruolo</div>
+      <div class="ruolo-card"><div class="ruolo-ic">📋</div><div><div class="ruolo-titolo">Cosa fai</div><div class="ruolo-testo">Segnali clienti con dubbi sul loro preventivo. Quando qualcuno contatta Feedet con il tuo codice, lo vedi qui.</div></div></div>
+      <div class="ruolo-card"><div class="ruolo-ic">💰</div><div><div class="ruolo-titolo">Come guadagni</div><div class="ruolo-testo">25% della nostra commissione per ogni lavoro chiuso, tramite bonifico entro 30 giorni. Offerta valida fino al 31/12/2025.</div></div></div>
+      <div class="ruolo-card"><div class="ruolo-ic">🚫</div><div><div class="ruolo-titolo">Cosa non fare</div><div class="ruolo-testo">Non fare promesse a nome di Feedet. Non garantire risparmi. Non trattare soldi per nostro conto.</div></div></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD ADMIN -->
+  <div class="view" id="viewDashAdmin">
+    <div class="page">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="adStatAmb">0</div><div class="stat-label">Ambassador attivi</div></div>
+        <div class="stat-card" id="statPendCard"><div class="stat-num o" id="adStatPend">0</div><div class="stat-label">In attesa</div></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="adStatLeads">0</div><div class="stat-label">Lead totali</div></div>
+        <div class="stat-card"><div class="stat-num v" id="adStatFatt">€0</div><div class="stat-label">Incassato</div></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" id="tabBtnAmbassador" onclick="switchTab('ambassador',this)">Ambassador</button>
+        <button class="tab" id="tabBtnPendenti" onclick="switchTab('pendenti',this)">In attesa<div class="tab-dot" id="dotPendenti"></div></button>
+        <button class="tab" id="tabBtnProspect" onclick="switchTab('prospect',this)">Prospect</button>
+        <button class="tab" id="tabBtnLeads" onclick="switchTab('leads',this)">Lead</button>
+        <button class="tab" id="tabBtnImpostazioni" onclick="switchTab('impostazioni',this)">⚙️</button>
+      </div>
+      <div id="tabAmbassador"></div>
+      <div id="tabPendenti" style="display:none"></div>
+      <div id="tabProspect" style="display:none"></div>
+      <div id="tabLeads" style="display:none"></div>
+      <div id="tabImpostazioni" style="display:none"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="onFab()">+</button>
+
+<!-- MODAL NUOVO AMBASSADOR -->
+<div class="modal-overlay" id="modalNuovoAmb">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aggiungi Ambassador</div>
+    <div class="error-box" id="naError"></div>
+    <div class="field"><label>Nome</label><input type="text" id="naNome" placeholder="Mario"/></div>
+    <div class="field"><label>Cognome</label><input type="text" id="naCognome" placeholder="Rossi"/></div>
+    <div class="field"><label>Categoria</label>
+      <select id="naCategoria">
+        <option value="CUS">🏢 Custode / Portiere</option>
+        <option value="IMM">🏠 Agente Immobiliare</option>
+        <option value="AMM">📋 Amministratore</option>
+        <option value="GEO">📐 Geometra / Tecnico</option>
+        <option value="ART">🔧 Artigiano</option>
+        <option value="ALT">👤 Altro</option>
+      </select>
+    </div>
+    <div class="field"><label>Zona</label><input type="text" id="naZona" placeholder="Milano Zona 6"/></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="naWhatsapp" placeholder="+39 333 000 0000"/></div>
+    <div class="field"><label>IBAN</label><input type="text" id="naIban" placeholder="IT60... (lascia vuoto se non disponibile)"/></div>
+    <div class="field"><label>Codice (vuoto = generato automaticamente)</label><input type="text" id="naCodice" placeholder="es. FD-IMM-3" style="text-transform:uppercase"/></div>
+    <div class="field"><label>Password temporanea</label><input type="text" id="naPass" placeholder="feedet123"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="aggiungiAmb()">AGGIUNGI</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalNuovoAmb')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICA AMBASSADOR -->
+<div class="modal-overlay" id="modalModAmb">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mmaTitolo">Modifica Ambassador</div>
+    <div class="modal-sub" id="mmaSub"></div>
+    <div class="error-box" id="mmaError"></div>
+    <div id="mmaBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="salvaAmb()">SALVA MODIFICHE</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalModAmb')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL STORICO AMBASSADOR -->
+<div class="modal-overlay" id="modalStoricoAmb">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="msaTitolo">Storico</div>
+    <div class="modal-sub" id="msaSub"></div>
+    <div id="msaBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalStoricoAmb')">CHIUDI</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUOVO PROSPECT -->
+<div class="modal-overlay" id="modalNuovoProspect">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aggiungi Prospect</div>
+    <div class="modal-sub">Persona incontrata — potenziale ambassador futuro</div>
+    <div class="error-box" id="npError"></div>
+    <div class="field"><label>Nome e Cognome</label><input type="text" id="npNome" placeholder="Mario Rossi"/></div>
+    <div class="field"><label>Categoria</label>
+      <select id="npCategoria">
+        <option value="CUS">🏢 Custode / Portiere</option>
+        <option value="IMM">🏠 Agente Immobiliare</option>
+        <option value="AMM">📋 Amministratore</option>
+        <option value="GEO">📐 Geometra / Tecnico</option>
+        <option value="ART">🔧 Artigiano</option>
+        <option value="ALT">👤 Altro</option>
+      </select>
+    </div>
+    <div class="field"><label>Zona</label><input type="text" id="npZona" placeholder="Milano Zona 6"/></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="npWhatsapp" placeholder="+39 333 000 0000"/></div>
+    <div class="field"><label>Stato</label>
+      <select id="npStato">
+        <option value="interessato">Interessato</option>
+        <option value="attesa">In attesa di risposta</option>
+        <option value="ricontattare">Da ricontattare</option>
+      </select>
+    </div>
+    <div class="field"><label>Note</label><textarea id="npNote" rows="3" placeholder="Appunti sull'incontro..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="aggiungiProspect()">AGGIUNGI</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalNuovoProspect')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICA PROSPECT -->
+<div class="modal-overlay" id="modalModProspect">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mmpTitolo">Modifica Prospect</div>
+    <div class="error-box" id="mmpError"></div>
+    <div id="mmpBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="salvaProspect()">SALVA</button>
+      <button class="btn btn-verde" onclick="converti()">🔄 CONVERTI IN AMBASSADOR</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalModProspect')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUOVO LEAD -->
+<div class="modal-overlay" id="modalNuovoLead">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuovo Lead</div>
+    <div class="error-box" id="nlError"></div>
+    <div class="field"><label>Nome cliente</label><input type="text" id="nlCliente" placeholder="Mario Rossi"/></div>
+    <div class="field"><label>Contatto cliente</label><input type="tel" id="nlContatto" placeholder="+39 333 000 0000"/></div>
+    <div class="field"><label>Tipo lavoro</label>
+      <select id="nlTipo">
+        <option>Sostituzione caldaia</option><option>Installazione caldaia</option>
+        <option>Climatizzatore</option><option>Impianto idraulico</option>
+        <option>Riparazione</option><option>Impianto riscaldamento</option>
+      </select>
+    </div>
+    <div class="field"><label>Importo preventivo originale (€)</label><input type="number" id="nlOrig" placeholder="2400"/></div>
+    <div class="field"><label>Codice ambassador</label><input type="text" id="nlCodice" placeholder="FD-CUS-6" style="text-transform:uppercase"/></div>
+    <div class="field"><label>Fonte</label>
+      <select id="nlFonte">
+        <option value="whatsapp">WhatsApp diretto</option>
+        <option value="biglietto">Biglietto da visita</option>
+        <option value="adesivo">Adesivo</option>
+        <option value="volantino">Volantino</option>
+        <option value="passaparola">Passaparola</option>
+        <option value="social">Social</option>
+        <option value="altro">Altro</option>
+      </select>
+    </div>
+    <div class="field"><label>Link allegati Drive (opzionale)</label><input type="url" id="nlLink" placeholder="https://drive.google.com/..."/></div>
+    <div class="field"><label>Note (opzionale)</label><textarea id="nlNote" rows="2" placeholder="Appunti sul caso..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="aggiungiLead()">AGGIUNGI LEAD</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalNuovoLead')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICA LEAD -->
+<div class="modal-overlay" id="modalModLead">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Modifica Lead</div>
+    <div class="modal-sub" id="mmlSub"></div>
+    <div class="error-box" id="mmlError"></div>
+    <div id="mmlBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="salvaLead()">SALVA</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalModLead')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIA PASSWORD (Ambassador) -->
+<div class="modal-overlay" id="modalCambiaPass">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Cambia password</div>
+    <div class="error-box" id="cpError"></div>
+    <div class="field"><label>Password attuale</label><input type="password" id="cpVecchia" placeholder="••••••••"/></div>
+    <div class="field"><label>Nuova password</label><input type="password" id="cpNuova" placeholder="Min. 6 caratteri"/></div>
+    <div class="field"><label>Conferma nuova password</label><input type="password" id="cpNuova2" placeholder="Ripeti la nuova password"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="cambiaPassword()">SALVA NUOVA PASSWORD</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalCambiaPass')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGGIORNA IBAN -->
+<div class="modal-overlay" id="modalAggiornaIban">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aggiorna IBAN</div>
+    <div class="modal-sub">L'IBAN viene usato per i bonifici delle commissioni</div>
+    <div class="field"><label>Nuovo IBAN</label><input type="text" id="aiIban" placeholder="IT60 X054 2811 1010 0000 0123 456"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="aggiornaIban()">SALVA</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalAggiornaIban')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGGIORNA WHATSAPP -->
+<div class="modal-overlay" id="modalAggiornaWa">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aggiorna WhatsApp</div>
+    <div class="field"><label>Nuovo numero WhatsApp</label><input type="tel" id="awWa" placeholder="+39 333 000 0000"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="aggiornaWa()">SALVA</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalAggiornaWa')">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmDialog">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Sei sicuro?</div>
+    <div class="confirm-text" id="confirmText"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-danger" id="confirmOk">CONFERMA</button>
+      <button class="btn btn-ghost" onclick="closeConfirm()">ANNULLA</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// COSTANTI
+// ============================================
+const CATEGORIE={
+  CUS:{label:'Custode',prefisso:'CUS',emoji:'🏢'},
+  IMM:{label:'Agente Immobiliare',prefisso:'IMM',emoji:'🏠'},
+  AMM:{label:'Amministratore',prefisso:'AMM',emoji:'📋'},
+  GEO:{label:'Geometra',prefisso:'GEO',emoji:'📐'},
+  ART:{label:'Artigiano',prefisso:'ART',emoji:'🔧'},
+  ALT:{label:'Altro',prefisso:'ALT',emoji:'👤'},
+};
+
+const FONTI={whatsapp:'WhatsApp',biglietto:'Biglietto',adesivo:'Adesivo',volantino:'Volantino',passaparola:'Passaparola',social:'Social',altro:'Altro'};
+
+const FASI=[
+  {key:'ricezione',label:'Ricezione',steps:[{key:'ricevuto',label:'Lead ricevuto'},{key:'allegati',label:'Allegati acquisiti'}]},
+  {key:'analisi',label:'Analisi',steps:[{key:'in_analisi',label:'Preventivo in analisi'},{key:'alternativo_pronto',label:'Preventivo alternativo pronto'}]},
+  {key:'contatto',label:'Contatto cliente',steps:[{key:'cliente_contattato',label:'Cliente contattato'},{key:'in_attesa_risposta',label:'In attesa risposta'},{key:'accettato',label:'Preventivo accettato'},{key:'rifiutato',label:'Preventivo rifiutato'}]},
+  {key:'esecuzione',label:'Esecuzione',steps:[{key:'artigiano_assegnato',label:'Artigiano assegnato'},{key:'lavoro_programmato',label:'Lavoro programmato'},{key:'lavoro_eseguito',label:'Lavoro eseguito'}]},
+  {key:'pagamento',label:'Pagamento',steps:[{key:'incassato_cliente',label:'Incassato da cliente'},{key:'pagato_artigiano',label:'Pagato artigiano'},{key:'pagato_ambassador',label:'Pagato ambassador'}]},
+];
+
+const COMM_FASCE=[{min:0,max:100,pct:0},{min:100,max:300,pct:30},{min:300,max:700,pct:25},{min:700,max:1500,pct:20},{min:1500,max:Infinity,pct:15}];
+const ADMINS=[{u:'alessandro',p:hashSimple('feedet2024'),n:'Alessandro'},{u:'socio',p:hashSimple('feedet2024'),n:'Socio'}];
+
+let ME=null,ROLE='admin',TAB='ambassador',EDIT_AMB=null,EDIT_PROSPECT=null,EDIT_LEAD=null,confirmCB=null,FILTRO_CAT='tutti';
+
+// ============================================
+// SICUREZZA — hash semplice (FIX BUG 11)
+// ============================================
+function hashSimple(str){
+  let h=0;
+  for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0}
+  return'h'+Math.abs(h).toString(36);
+}
+
+// ============================================
+// DATABASE con try/catch (FIX BUG 10)
+// ============================================
+function DB(){
+  try{
+    const raw=localStorage.getItem('fd7');
+    if(!raw)return{ambassador:[],prospect:[],leads:[]};
+    const db=JSON.parse(raw);
+    if(!db.ambassador)db.ambassador=[];
+    if(!db.prospect)db.prospect=[];
+    if(!db.leads)db.leads=[];
+    return db;
+  }catch(e){
+    console.error('DB corrotto, reset:',e);
+    const fresh={ambassador:[],prospect:[],leads:[]};
+    try{localStorage.setItem('fd7',JSON.stringify(fresh))}catch(e2){}
+    return fresh;
+  }
+}
+
+function SDB(db){
+  try{localStorage.setItem('fd7',JSON.stringify(db))}
+  catch(e){showToast('⚠️ Errore salvataggio — memoria piena?')}
+}
+
+// ============================================
+// CALCOLO COMMISSIONI
+// ============================================
+function calcComm(orig,alt){
+  if(!orig||!alt||alt>=orig)return{risparmio:0,pct:0,commFeedet:0,commAmb:0,prezzoFinale:0,risparmiNetto:0};
+  const r=orig-alt,f=COMM_FASCE.find(c=>r>=c.min&&r<c.max),pct=f?f.pct:0;
+  const cF=Math.round(r*pct/100),cA=Math.round(cF*.25);
+  return{risparmio:r,pct,commFeedet:cF,commAmb:cA,prezzoFinale:alt+cF,risparmiNetto:orig-(alt+cF)};
+}
+
+// ============================================
+// CODICE AMBASSADOR
+// ============================================
+function generaCodice(cat,zona){
+  const db=DB();
+  const pref=CATEGORIE[cat]?.prefisso||'ALT';
+  const num=zona.replace(/\D/g,'').substring(0,1)||String(Math.floor(Math.random()*9+1));
+  let base=`FD-${pref}-${num}`,i=1,cod=base;
+  while(db.ambassador.find(a=>a.codice===cod)){cod=`${base}${i}`;i++}
+  return cod;
+}
+
+// ============================================
+// VALIDAZIONE
+// ============================================
+function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.classList.add('show')}}
+function hideErr(id){const el=document.getElementById(id);if(el)el.classList.remove('show')}
+function validateIban(iban){return!iban||iban.length>=15}
+
+// ============================================
+// NAV
+// ============================================
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function setRole(r){
+  ROLE=r;
+  document.getElementById('roleAdminBtn').classList.toggle('active',r==='admin');
+  document.getElementById('roleAmbBtn').classList.toggle('active',r==='ambassador');
+}
+
+function updateTopbar(){
+  const b=document.getElementById('badgeRole'),l=document.getElementById('btnLogout'),f=document.getElementById('fabBtn');
+  if(!ME){b.className='badge-role';l.className='btn-logout';f.className='fab';return}
+  b.className='badge-role show '+(ME.role==='admin'?'badge-admin-role':'badge-amb-role');
+  b.textContent=ME.role==='admin'?'⬡ Admin':'Ambassador';
+  l.className='btn-logout show';
+  if(ME.role==='admin')f.className='fab show';else f.className='fab';
+  updateNotifBadge();
+}
+
+function updateNotifBadge(){
+  if(!ME||ME.role!=='admin')return;
+  const db=DB();
+  const n=db.ambassador.filter(a=>a.stato==='pendente').length;
+  const badge=document.getElementById('notifBadge');
+  const dot=document.getElementById('dotPendenti');
+  if(n>0){badge.textContent=n;badge.className='notif-badge show';if(dot)dot.className='tab-dot show'}
+  else{badge.className='notif-badge';if(dot)dot.className='tab-dot'}
+}
+
+function logout(){ME=null;ROLE='admin';updateTopbar();showView('viewLogin');hideErr('loginError')}
+
+// FIX BUG 1: switchTab ora usa nomi capitalizzati correttamente
+function switchTab(t,el){
+  TAB=t;FILTRO_CAT='tutti';
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const tabMap={ambassador:'Ambassador',pendenti:'Pendenti',prospect:'Prospect',leads:'Leads',impostazioni:'Impostazioni'};
+  Object.keys(tabMap).forEach(k=>{
+    const div=document.getElementById('tab'+tabMap[k]);
+    if(div)div.style.display=k===t?'block':'none';
+  });
+  renderAdmin();
+}
+
+// ============================================
+// LOGIN
+// ============================================
+function doLogin(){
+  hideErr('loginError');
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  if(!u||!p){showErr('loginError','Inserisci username e password');return}
+
+  if(ROLE==='admin'){
+    const a=ADMINS.find(x=>x.u===u&&x.p===hashSimple(p));
+    if(a){ME={...a,role:'admin'};updateTopbar();showView('viewDashAdmin');renderAdmin();return}
+    showErr('loginError','Credenziali non valide');return;
+  }
+
+  const db=DB();
+  const amb=db.ambassador.find(x=>x.codice&&x.codice.toUpperCase()===u.toUpperCase()&&x.password===hashSimple(p)&&x.stato==='attivo');
+  if(amb){ME={...amb,role:'ambassador'};updateTopbar();showView('viewDashAmb');renderAmbDash();return}
+
+  // FIX BUG 7: messaggio chiaro per ambassador pendente
+  const pend=db.ambassador.find(x=>x.whatsapp===u&&x.password===hashSimple(p)&&x.stato==='pendente');
+  if(pend){showErr('loginError','La tua richiesta è ancora in attesa di approvazione. Ti contatteremo presto su WhatsApp.');return}
+
+  showErr('loginError','Credenziali non valide. Controlla il codice o la password.');
+}
+
+// ============================================
+// REGISTRAZIONE
+// ============================================
+function doRegistrazione(){
+  hideErr('regError');
+  const nome=document.getElementById('regNome').value.trim();
+  const cognome=document.getElementById('regCognome').value.trim();
+  const cat=document.getElementById('regCategoria').value;
+  const zona=document.getElementById('regZona').value.trim();
+  const wa=document.getElementById('regWhatsapp').value.trim();
+  const iban=document.getElementById('regIban').value.trim();
+  const pass=document.getElementById('regPass').value.trim();
+  const pass2=document.getElementById('regPass2').value.trim();
+
+  if(!nome||!cognome||!cat||!zona||!wa||!iban||!pass){showErr('regError','Compila tutti i campi obbligatori');return}
+  if(pass.length<6){showErr('regError','La password deve essere di almeno 6 caratteri');return}
+  if(pass!==pass2){showErr('regError','Le password non coincidono');return}
+  if(!document.getElementById('checkTermini').checked){showErr('regError','Devi accettare i termini di collaborazione');return}
+
+  const db=DB();
+  db.ambassador.push({
+    id:Date.now(),nome,cognome,categoria:cat,zona,
+    whatsapp:wa,iban,
+    password:hashSimple(pass), // FIX BUG 11: hash password
+    codice:null,stato:'pendente',
+    dataReg:new Date().toLocaleDateString('it-IT'),
+    leadInviati:0,lavoriChiusi:0,incassato:0,daIncassare:0
+  });
+  SDB(db);showView('viewPendente');showToast('Richiesta inviata!');
+  // Reset form
+  ['regNome','regCognome','regZona','regWhatsapp','regIban','regPass','regPass2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+  document.getElementById('regCategoria').value='';
+  document.getElementById('checkTermini').checked=false;
+}
+
+// ============================================
+// DASHBOARD AMBASSADOR
+// ============================================
+function renderAmbDash(){
+  if(!ME)return;
+  // FIX BUG 3: rileggi sempre i dati freschi dal DB
+  const db=DB();
+  const fresco=db.ambassador.find(a=>a.id===ME.id)||ME;
+
+  document.getElementById('aNome').textContent=fresco.nome;
+  document.getElementById('aCodice').textContent=fresco.codice||'—';
+  document.getElementById('aLeads').textContent=fresco.leadInviati||0;
+  document.getElementById('aChiusi').textContent=fresco.lavoriChiusi||0;
+  document.getElementById('aIncassato').textContent='€'+(fresco.incassato||0);
+  document.getElementById('aDaIncassare').textContent='€'+(fresco.daIncassare||0);
+
+  // FIX UX3: onboarding se 0 lead
+  const ob=document.getElementById('aOnboarding');
+  if((fresco.leadInviati||0)===0){
+    ob.innerHTML=`<div class="onboarding">
+      <div class="onboarding-icon">🚀</div>
+      <div class="onboarding-title">Sei pronto!</div>
+      <div class="onboarding-text">Il tuo codice è <strong style="color:var(--accent)">${fresco.codice||'in attesa di assegnazione'}</strong>.<br/>Inizia a portare segnalazioni — ogni preventivo che qualcuno ti manda con il tuo codice apparirà qui.</div>
+    </div>`;
+  }else{ob.innerHTML=''}
+
+  const leads=db.leads.filter(l=>l.codiceAmb===fresco.codice);
+  const el=document.getElementById('aLeadList');
+  el.innerHTML=leads.length===0?'<div class="empty">Nessun cliente ancora.</div>':leads.map(renderTrackAmb).join('');
+}
+
+function renderTrackAmb(lead){
+  const stepsV=[{key:'ricevuto',label:'Lead ricevuto'},{key:'in_analisi',label:'Preventivo in analisi'},{key:'accettato',label:'Preventivo accettato'},{key:'lavoro_programmato',label:'Lavoro programmato'},{key:'lavoro_eseguito',label:'Lavoro eseguito'},{key:'incassato_cliente',label:'Pagamento ricevuto'},{key:'pagato_ambassador',label:'Bonifico in arrivo (entro 30gg)'}];
+  const comp=lead.stepsCompletati||[];
+  const si=stepsV.findIndex(s=>!comp.includes(s.key));
+  const steps=stepsV.map((s,i)=>{
+    const done=comp.includes(s.key),cur=!done&&i===si,cls=done?'done':cur?'cur':'';
+    return`<div class="ts"><div class="ts-dot ${cls}"></div><div><div class="ts-label ${cls}">${s.label}</div></div></div>`;
+  }).join('');
+  return`<div class="track-card"><div class="track-header"><div class="track-tipo">${lead.tipoLavoro}</div><div class="track-id">#${String(lead.id).slice(-4)}</div></div><div>${steps}</div></div>`;
+}
+
+// ============================================
+// MODIFICA PROFILO AMBASSADOR (FIX UX4)
+// ============================================
+function cambiaPassword(){
+  hideErr('cpError');
+  const db=DB();
+  const i=db.ambassador.findIndex(a=>a.id===ME.id);
+  if(i===-1)return;
+  const vecchia=document.getElementById('cpVecchia').value.trim();
+  const nuova=document.getElementById('cpNuova').value.trim();
+  const nuova2=document.getElementById('cpNuova2').value.trim();
+  if(db.ambassador[i].password!==hashSimple(vecchia)){showErr('cpError','Password attuale non corretta');return}
+  if(nuova.length<6){showErr('cpError','La nuova password deve avere almeno 6 caratteri');return}
+  if(nuova!==nuova2){showErr('cpError','Le password non coincidono');return}
+  db.ambassador[i].password=hashSimple(nuova);
+  SDB(db);closeModal('modalCambiaPass');showToast('Password aggiornata ✓');
+  ['cpVecchia','cpNuova','cpNuova2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+}
+
+function aggiornaIban(){
+  const db=DB(),i=db.ambassador.findIndex(a=>a.id===ME.id);if(i===-1)return;
+  const iban=document.getElementById('aiIban').value.trim();
+  if(!iban){showToast('Inserisci un IBAN valido');return}
+  db.ambassador[i].iban=iban;ME.iban=iban;SDB(db);
+  closeModal('modalAggiornaIban');showToast('IBAN aggiornato ✓');
+}
+
+function aggiornaWa(){
+  const db=DB(),i=db.ambassador.findIndex(a=>a.id===ME.id);if(i===-1)return;
+  const wa=document.getElementById('awWa').value.trim();
+  if(!wa){showToast('Inserisci un numero WhatsApp');return}
+  db.ambassador[i].whatsapp=wa;ME.whatsapp=wa;SDB(db);
+  closeModal('modalAggiornaWa');showToast('WhatsApp aggiornato ✓');
+}
+
+// ============================================
+// DASHBOARD ADMIN
+// ============================================
+function renderAdmin(){
+  try{
+    const db=DB();
+    const att=db.ambassador.filter(a=>a.stato==='attivo');
+    const pend=db.ambassador.filter(a=>a.stato==='pendente');
+    const totFatt=db.leads.filter(l=>(l.stepsCompletati||[]).includes('incassato_cliente')).reduce((s,l)=>s+(l.calc?.commFeedet||0),0);
+    document.getElementById('adStatAmb').textContent=att.length;
+    document.getElementById('adStatPend').textContent=pend.length;
+    document.getElementById('adStatLeads').textContent=db.leads.length;
+    document.getElementById('adStatFatt').textContent='€'+totFatt;
+    // Alert badge su stat pendenti
+    const sc=document.getElementById('statPendCard');
+    if(sc){
+      const existing=sc.querySelector('.stat-alert');if(existing)existing.remove();
+      if(pend.length>0){const a=document.createElement('div');a.className='stat-alert';a.textContent=pend.length;sc.appendChild(a)}
+    }
+    updateNotifBadge();
+    if(TAB==='ambassador')renderTabAmb(db);
+    else if(TAB==='pendenti')renderTabPendenti(db);
+    else if(TAB==='prospect')renderTabProspect(db);
+    else if(TAB==='leads')renderTabLeads(db);
+    else if(TAB==='impostazioni')renderTabImpostazioni(db);
+  }catch(e){console.error('renderAdmin error:',e);showToast('⚠️ Errore di rendering')}
+}
+
+// TAB AMBASSADOR
+function renderTabAmb(db){
+  const el=document.getElementById('tabAmbassador');
+  let list=db.ambassador.filter(a=>a.stato==='attivo'||a.stato==='sospeso');
+  const cats=Object.keys(CATEGORIE);
+  const filtriHtml=`<div class="filtri-row">
+    <button class="filtro-btn ${FILTRO_CAT==='tutti'?'active':''}" onclick="setFiltro('tutti')">Tutti (${list.length})</button>
+    ${cats.map(c=>{const n=list.filter(a=>a.categoria===c).length;return n>0?`<button class="filtro-btn ${FILTRO_CAT===c?'active':''}" onclick="setFiltro('${c}')">${CATEGORIE[c].emoji} ${CATEGORIE[c].label} (${n})</button>`:''}).join('')}
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ Esporta CSV</button>
+  </div>`;
+  if(FILTRO_CAT!=='tutti')list=list.filter(a=>a.categoria===FILTRO_CAT);
+  el.innerHTML=filtriHtml+(list.length===0?'<div class="empty">Nessun ambassador ancora.</div>':list.map(a=>`
+    <div class="amb-card">
+      <div class="ac-top">
+        <div>
+          <div class="ac-nome">${a.nome} ${a.cognome}</div>
+          <div class="ac-zona">${a.zona}</div>
+          <div style="margin-top:5px">
+            <span class="cat-badge cat-${a.categoria}">${CATEGORIE[a.categoria]?.emoji} ${CATEGORIE[a.categoria]?.label||a.categoria}</span>
+            <span class="badge badge-${a.stato}" style="margin-left:4px">${a.stato}</span>
+          </div>
+        </div>
+        <div class="ac-right"><span class="ac-codice">${a.codice||'—'}</span></div>
+      </div>
+      <div class="ac-stats">
+        <div class="ac-stat"><div class="ac-stat-num">${a.leadInviati||0}</div><div class="ac-stat-label">Lead</div></div>
+        <div class="ac-stat"><div class="ac-stat-num v">${a.lavoriChiusi||0}</div><div class="ac-stat-label">Chiusi</div></div>
+        <div class="ac-stat"><div class="ac-stat-num o">€${a.incassato||0}</div><div class="ac-stat-label">Incassato</div></div>
+      </div>
+      <div class="ac-actions">
+        <button class="act act-mod" onclick="openModAmb(${a.id})">✏️ Modifica</button>
+        <button class="act act-mod" onclick="openStoricoAmb(${a.id})" style="background:#f6f8fc;color:var(--tl);border-color:var(--bl)">📊 Storico</button>
+        <button class="act ${a.stato==='attivo'?'act-sosp':'act-riatt'}" onclick="toggleSospendi(${a.id})">${a.stato==='attivo'?'⏸':'▶'}</button>
+        <button class="act act-del" onclick="confirmElimina('ambassador',${a.id},'${a.nome} ${a.cognome}')">🗑</button>
+      </div>
+    </div>`).join(''));
+}
+
+function setFiltro(cat){FILTRO_CAT=cat;renderAdmin()}
+
+// TAB PENDENTI
+function renderTabPendenti(db){
+  const pend=db.ambassador.filter(a=>a.stato==='pendente');
+  const el=document.getElementById('tabPendenti');
+  el.innerHTML=pend.length===0?'<div class="empty">Nessuna richiesta in attesa 🎉</div>':pend.map(a=>`
+    <div class="pend-card">
+      <div class="pend-nome">${a.nome} ${a.cognome}</div>
+      <div style="margin-bottom:10px"><span class="cat-badge cat-${a.categoria}">${CATEGORIE[a.categoria]?.emoji} ${CATEGORIE[a.categoria]?.label}</span></div>
+      <div class="pend-info">📍 <span>${a.zona}</span><br/>📱 <span>${a.whatsapp}</span><br/>🏦 <span>${a.iban?a.iban.substring(0,20)+'…':'Non fornito'}</span><br/>📅 <span>${a.dataReg}</span></div>
+      <div style="font-size:11px;color:var(--tl);margin-bottom:8px">Codice suggerito — modificalo se necessario:</div>
+      <div class="codice-row">
+        <input type="text" id="ci_${a.id}" value="${generaCodicePreview(a.categoria,a.zona,db)}" placeholder="FD-XXX-1"/>
+        <button class="btn-ok" onclick="approvaAmb(${a.id})">✓</button>
+        <button class="btn-no" onclick="confirmElimina('ambassador',${a.id},'${a.nome} ${a.cognome}')">✗</button>
+      </div>
+    </div>`).join('');
+}
+
+// FIX BUG 8: generaCodicePreview controlla duplicati
+function generaCodicePreview(cat,zona,db){
+  const pref=CATEGORIE[cat]?.prefisso||'ALT';
+  const num=zona.replace(/\D/g,'').substring(0,1)||'1';
+  let base=`FD-${pref}-${num}`,i=1,cod=base;
+  const esistenti=(db?.ambassador||[]).filter(a=>a.stato==='attivo').map(a=>a.codice);
+  while(esistenti.includes(cod)){cod=`${base}${i}`;i++}
+  return cod;
+}
+
+// TAB PROSPECT
+function renderTabProspect(db){
+  const el=document.getElementById('tabProspect');
+  const list=(db.prospect||[]).filter(p=>p.stato!=='convertito');
+  const filtriHtml=`<div class="filtri-row">
+    <button class="filtro-btn ${FILTRO_CAT==='tutti'?'active':''}" onclick="setFiltro('tutti')">Tutti (${list.length})</button>
+    <button class="filtro-btn ${FILTRO_CAT==='ricontattare'?'active':''}" onclick="setFiltro('ricontattare')">⚠️ Da ricontattare</button>
+    <button class="filtro-btn ${FILTRO_CAT==='interessato'?'active':''}" onclick="setFiltro('interessato')">⭐ Interessati</button>
+    <button class="filtro-btn ${FILTRO_CAT==='attesa'?'active':''}" onclick="setFiltro('attesa')">⏳ In attesa</button>
+  </div>`;
+  let filtered=FILTRO_CAT==='tutti'?list:list.filter(p=>p.stato===FILTRO_CAT);
+  el.innerHTML=filtriHtml+(filtered.length===0?'<div class="empty">Nessun prospect.<br/>Usa + per aggiungerne uno.</div>':filtered.map(p=>`
+    <div class="prospect-card">
+      <div class="pc-top">
+        <div>
+          <div class="pc-nome">${p.nome}</div>
+          <div style="margin-top:4px">
+            <span class="cat-badge cat-${p.categoria}">${CATEGORIE[p.categoria]?.emoji} ${CATEGORIE[p.categoria]?.label}</span>
+            <span class="stato-badge stato-${p.stato}" style="margin-left:5px">${p.stato}</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--tl)">${p.dataContatto}</div>
+      </div>
+      <div class="pc-info">📍 <span>${p.zona}</span><br/>📱 <span>${p.whatsapp}</span></div>
+      ${p.note?`<div class="pc-note">${p.note}</div>`:''}
+      <div class="pc-actions">
+        <button class="act act-mod btn-sm" onclick="openModProspect(${p.id})" style="flex:1">✏️ Modifica</button>
+        <button class="act act-del btn-sm" onclick="confirmElimina('prospect',${p.id},'${p.nome}')" style="flex:1">🗑 Elimina</button>
+      </div>
+    </div>`).join(''));
+}
+
+// TAB LEADS
+function renderTabLeads(db){
+  const el=document.getElementById('tabLeads');
+  // Filtri fonte
+  const fontiPresenti=[...new Set(db.leads.map(l=>l.fonte).filter(Boolean))];
+  const filtriHtml=`<div class="filtri-row">
+    <button class="filtro-btn ${FILTRO_CAT==='tutti'?'active':''}" onclick="setFiltro('tutti')">Tutti (${db.leads.length})</button>
+    ${fontiPresenti.map(f=>`<button class="filtro-btn ${FILTRO_CAT===f?'active':''}" onclick="setFiltro('${f}')">${FONTI[f]||f}</button>`).join('')}
+  </div>`;
+  let leads=FILTRO_CAT==='tutti'?db.leads:db.leads.filter(l=>l.fonte===FILTRO_CAT);
+  el.innerHTML=filtriHtml+(leads.length===0?'<div class="empty">Nessun lead.</div>':leads.map(l=>renderLeadAdmin(l,db)).join(''));
+}
+
+function renderLeadAdmin(lead,db){
+  const comp=lead.stepsCompletati||[];
+  const calc=lead.calc||{};
+  const rif=comp.includes('rifiutato');
+  const tuttiSteps=FASI.flatMap(f=>f.steps);
+  const ultimoComp=comp.filter(c=>c!=='rifiutato');
+  const ultimoStep=ultimoComp.length?tuttiSteps.find(s=>s.key===ultimoComp[ultimoComp.length-1]):null;
+  const statoLabel=rif?'Rifiutato':ultimoStep?ultimoStep.label:'Ricevuto';
+  const statoClasse=getStatoClasse(comp,rif);
+  const fonteLabel=FONTI[lead.fonte]||'—';
+
+  const cifre=calc.commFeedet?`
+    <div class="lc-section"><div class="lc-section-title">Cifre</div>
+    <div class="cifre-grid">
+      <div class="cifra-box"><div class="cifra-label">Prev. originale</div><div class="cifra-val dark">€${lead.prevOriginale||'—'}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Prev. alternativo</div><div class="cifra-val v">€${lead.prevAlternativo||'—'}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Risparmio lordo</div><div class="cifra-val a">€${calc.risparmio||0}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Fascia comm.</div><div class="cifra-val dark">${calc.pct||0}%</div></div>
+    </div>
+    <div class="cifra-full"><span class="cifra-label">Commissione Feedet</span><div class="cifra-val a" style="font-size:20px">€${calc.commFeedet||0}</div></div>
+    <div class="cifra-full" style="margin-top:6px"><span class="cifra-label">Quota ambassador (25%)</span><div class="cifra-val o" style="font-size:20px">€${calc.commAmb||0}</div></div>
+    <div class="cifra-full" style="margin-top:6px"><span class="cifra-label">Prezzo finale cliente</span><div class="cifra-val v" style="font-size:20px">€${calc.prezzoFinale||0}</div></div>
+    <div class="cifra-full" style="margin-top:6px"><span class="cifra-label">Risparmio netto cliente</span><div class="cifra-val v" style="font-size:20px">€${calc.risparmiNetto||0}</div></div>
+    </div>`:'<div class="lc-section"><div class="lc-section-title">Cifre</div><div style="font-size:11px;color:var(--tl);padding:4px 0">Preventivo alternativo non ancora inserito — modifica il lead per aggiungerlo</div></div>';
+
+  const fasiHtml=FASI.map(fase=>{
+    if(rif&&!['ricezione','analisi','contatto'].includes(fase.key))return'';
+    const sh=fase.steps.map(s=>{
+      const done=comp.includes(s.key);
+      return`<button class="step-btn ${done?'done':'todo'}" onclick="toggleStep(${lead.id},'${s.key}')">${s.label}</button>`;
+    }).join('');
+    return`<div style="margin-bottom:10px"><div style="font-size:9px;letter-spacing:.1em;color:var(--tl);text-transform:uppercase;margin-bottom:6px">${fase.label}</div>${sh}</div>`;
+  }).join('');
+
+  const ambOpts=(db.ambassador||[]).filter(a=>a.stato==='attivo').map(a=>`<option value="${a.codice}" ${a.codice===lead.codiceAmb?'selected':''}>${a.codice} — ${a.nome} ${a.cognome}</option>`).join('');
+
+  return`<div class="lead-card">
+    <div class="lc-header">
+      <div class="lc-header-top">
+        <div><div class="lc-tipo">${lead.tipoLavoro}</div><div class="lc-id">#${String(lead.id).slice(-4)} • ${lead.dataCreazione}</div></div>
+        <span class="lc-stato-badge badge ${statoClasse}">${statoLabel}</span>
+      </div>
+      <div class="lc-meta">Cliente: <span>${lead.cliente||'—'}</span>${lead.contatto?` • <span style="color:var(--tl)">${lead.contatto}</span>`:''}</div>
+      <div class="lc-meta">Ambassador: <span>${lead.codiceAmb||'—'}</span><span class="lc-fonte">📍 ${fonteLabel}</span></div>
+      ${lead.note?`<div class="lc-note-preview">📝 ${lead.note}</div>`:''}
+    </div>
+    ${cifre}
+    <div class="lc-section"><div class="lc-section-title">Allegati</div>
+      ${lead.linkAllegati?`<a class="link-allegati" href="${lead.linkAllegati}" target="_blank">📎 &nbsp;Apri allegati su Drive</a>`:'<div class="link-allegati-vuoto">📎 &nbsp;Nessun link allegati</div>'}
+    </div>
+    <div class="lc-section"><div class="lc-section-title">Avanzamento — tocca per aggiornare</div>${fasiHtml}</div>
+    <div class="lc-section"><div class="lc-section-title">Artigiano</div>
+      ${lead.artigiano?`<div style="padding:10px;background:var(--sl);border-radius:10px;font-size:12px;color:var(--td)">${lead.artigiano}${lead.dataLavoro?` • <span style="color:var(--tl)">${lead.dataLavoro}</span>`:''}</div>`:'<div style="font-size:11px;color:var(--tl)">Nessun artigiano — modifica lead per assegnare</div>'}
+    </div>
+    <div class="lc-section"><div class="lc-section-title">Pagamenti</div>
+      <div class="pag-row"><span class="pag-label">Incassato da cliente</span><span class="pag-val ${comp.includes('incassato_cliente')?'fatto':'attesa'}">${comp.includes('incassato_cliente')?'✓ €'+(calc.prezzoFinale||'—'):'In attesa'}</span></div>
+      <div class="pag-row"><span class="pag-label">Pagato artigiano</span><span class="pag-val ${comp.includes('pagato_artigiano')?'fatto':'attesa'}">${comp.includes('pagato_artigiano')?'✓ Fatto':'In attesa'}</span></div>
+      <div class="pag-row"><span class="pag-label">Pagato ambassador</span><span class="pag-val ${comp.includes('pagato_ambassador')?'fatto':'attesa'}">${comp.includes('pagato_ambassador')?'✓ €'+(calc.commAmb||'—'):'In attesa'}</span></div>
+    </div>
+    <div class="lc-section"><div class="lc-section-title">Riassegna ambassador</div>
+      <select style="width:100%;background:var(--sl);border:1.5px solid var(--bl);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--td);outline:none;-webkit-appearance:none" onchange="riassegnaLead(${lead.id},this.value)">${ambOpts||'<option>Nessun ambassador attivo</option>'}</select>
+    </div>
+    <div class="lc-actions">
+      <button class="btn btn-primary btn-sm" onclick="openModLead(${lead.id})" style="flex:1">✏️ Modifica</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmElimina('lead',${lead.id},'lead #${String(lead.id).slice(-4)}')" style="flex:1">🗑 Elimina</button>
+    </div>
+  </div>`;
+}
+
+function getStatoClasse(comp,rif){
+  if(rif)return'stato-rifiutato';
+  if(!comp.length)return'stato-ricezione';
+  const u=comp.filter(c=>c!=='rifiutato');
+  if(!u.length)return'stato-ricezione';
+  const last=u[u.length-1];
+  if(['ricevuto','allegati'].includes(last))return'stato-ricezione';
+  if(['in_analisi','alternativo_pronto'].includes(last))return'stato-analisi';
+  if(['cliente_contattato','in_attesa_risposta','accettato'].includes(last))return'stato-contatto';
+  if(['artigiano_assegnato','lavoro_programmato','lavoro_eseguito'].includes(last))return'stato-esecuzione';
+  return'stato-pagamento';
+}
+
+// TAB IMPOSTAZIONI (FIX UX — sezione admin)
+function renderTabImpostazioni(db){
+  const el=document.getElementById('tabImpostazioni');
+  const totAmb=db.ambassador.length,totLead=db.leads.length,totProspect=(db.prospect||[]).length;
+  const totPagati=db.ambassador.reduce((s,a)=>s+(a.incassato||0),0);
+  el.innerHTML=`
+    <div class="impost-section">
+      <div class="impost-title">Statistiche generali</div>
+      <div class="impost-row"><span>Ambassador totali</span><span style="color:var(--td)">${totAmb}</span></div>
+      <div class="impost-row"><span>Lead totali</span><span style="color:var(--td)">${totLead}</span></div>
+      <div class="impost-row"><span>Prospect totali</span><span style="color:var(--td)">${totProspect}</span></div>
+      <div class="impost-row"><span>Commissioni pagate</span><span style="color:var(--verde)">€${totPagati}</span></div>
+    </div>
+    <div class="impost-section">
+      <div class="impost-title">Gestione dati</div>
+      <div class="impost-row"><span>Esporta ambassador CSV</span><button onclick="exportCSV('ambassador')">↓ Scarica</button></div>
+      <div class="impost-row"><span>Esporta lead CSV</span><button onclick="exportCSV('leads')">↓ Scarica</button></div>
+      <div class="impost-row"><span>Esporta prospect CSV</span><button onclick="exportCSV('prospect')">↓ Scarica</button></div>
+    </div>
+    <div class="impost-section">
+      <div class="impost-title">Cambia password admin</div>
+      <div class="field" style="margin-bottom:10px"><label>Seleziona utente</label>
+        <select id="adminUser"><option value="alessandro">Alessandro</option><option value="socio">Socio</option></select>
+      </div>
+      <div class="field" style="margin-bottom:10px"><label>Nuova password</label><input type="password" id="adminNewPass" placeholder="Min. 6 caratteri"/></div>
+      <div class="field" style="margin-bottom:10px"><label>Conferma password</label><input type="password" id="adminNewPass2" placeholder="Ripeti"/></div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="cambiaPassAdmin()">SALVA NUOVA PASSWORD</button>
+    </div>
+    <div class="impost-section">
+      <div class="impost-title">Zona pericolosa</div>
+      <div class="impost-row"><span style="color:var(--rosso)">Reset database completo</span><button onclick="resetDB()" style="color:var(--rosso);border-color:rgba(224,82,82,.3)">Reset</button></div>
+    </div>`;
+}
+
+// ============================================
+// CAMBIA PASSWORD ADMIN
+// ============================================
+function cambiaPassAdmin(){
+  const u=document.getElementById('adminUser').value;
+  const p1=document.getElementById('adminNewPass').value.trim();
+  const p2=document.getElementById('adminNewPass2').value.trim();
+  if(p1.length<6){showToast('Password troppo corta');return}
+  if(p1!==p2){showToast('Le password non coincidono');return}
+  const i=ADMINS.findIndex(a=>a.u===u);
+  if(i!==-1){ADMINS[i].p=hashSimple(p1);showToast(`Password di ${u} aggiornata ✓`)}
+  document.getElementById('adminNewPass').value='';
+  document.getElementById('adminNewPass2').value='';
+}
+
+function resetDB(){
+  confirmCB=()=>{
+    try{localStorage.removeItem('fd7')}catch(e){}
+    showToast('Database resettato');renderAdmin();
+  };
+  document.getElementById('confirmTitle').textContent='Reset database';
+  document.getElementById('confirmText').textContent='Cancellerai TUTTI i dati: ambassador, prospect e lead. Azione irreversibile.';
+  document.getElementById('confirmDialog').classList.add('show');
+}
+
+// ============================================
+// STORICO AMBASSADOR (FIX UX2)
+// ============================================
+function openStoricoAmb(id){
+  const db=DB(),a=db.ambassador.find(x=>x.id===id);if(!a)return;
+  document.getElementById('msaTitolo').textContent=`${a.nome} ${a.cognome}`;
+  document.getElementById('msaSub').textContent=`Codice: ${a.codice||'—'} • ${CATEGORIE[a.categoria]?.label}`;
+  const leads=db.leads.filter(l=>l.codiceAmb===a.codice);
+  const pagati=leads.filter(l=>(l.stepsCompletati||[]).includes('pagato_ambassador'));
+  const daP=leads.filter(l=>(l.stepsCompletati||[]).includes('incassato_cliente')&&!(l.stepsCompletati||[]).includes('pagato_ambassador'));
+
+  document.getElementById('msaBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <div class="cifra-box"><div class="cifra-label">Lead totali</div><div class="cifra-val dark" style="font-size:28px">${leads.length}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Lavori chiusi</div><div class="cifra-val v" style="font-size:28px">${pagati.length}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Già pagato</div><div class="cifra-val o" style="font-size:24px">€${a.incassato||0}</div></div>
+      <div class="cifra-box"><div class="cifra-label">Da pagare</div><div class="cifra-val r" style="font-size:24px">€${daP.reduce((s,l)=>s+(l.calc?.commAmb||0),0)}</div></div>
+    </div>
+    <div style="font-size:9px;letter-spacing:.1em;color:var(--tl);text-transform:uppercase;margin-bottom:10px">Lead per tipo</div>
+    ${leads.length===0?'<div class="empty">Nessun lead ancora</div>':leads.map(l=>{
+      const comp=l.stepsCompletati||[];
+      const stato=comp.includes('pagato_ambassador')?'✓ Pagato':comp.includes('incassato_cliente')?'Da pagare':comp.includes('rifiutato')?'Rifiutato':'In corso';
+      const statoColor=comp.includes('pagato_ambassador')?'var(--verde)':comp.includes('rifiutato')?'var(--rosso)':'var(--oro)';
+      return`<div class="storico-row">
+        <div><div class="storico-tipo">${l.tipoLavoro}</div><div class="storico-data">${l.dataCreazione} • ${FONTI[l.fonte]||'—'}</div></div>
+        <div style="text-align:right">
+          ${l.calc?.commAmb?`<div class="storico-importo">€${l.calc.commAmb}</div>`:'<div style="font-size:11px;color:var(--tl)">TBD</div>'}
+          <div style="font-size:9px;color:${statoColor}">${stato}</div>
+        </div>
+      </div>`;
+    }).join('')}`;
+  openModal('modalStoricoAmb');
+}
+
+// ============================================
+// AZIONI AMBASSADOR
+// ============================================
+function approvaAmb(id){
+  hideErr('');
+  const inp=document.getElementById('ci_'+id);
+  const cod=inp?inp.value.trim().toUpperCase():'';
+  if(!cod){showToast('Inserisci un codice');return}
+  if(!/^FD-[A-Z]+-\w+$/.test(cod)){showToast('Formato codice non valido (es. FD-CUS-5)');return}
+  const db=DB();
+  if(db.ambassador.find(a=>a.codice===cod&&a.id!==id)){showToast('Codice già in uso — scegline un altro');return}
+  const i=db.ambassador.findIndex(a=>a.id===id);if(i===-1)return;
+  db.ambassador[i].stato='attivo';db.ambassador[i].codice=cod;SDB(db);
+  showToast(`✓ Approvato — ${cod}`);renderAdmin();
+  updateNotifBadge();
+}
+
+function toggleSospendi(id){
+  const db=DB(),i=db.ambassador.findIndex(a=>a.id===id);if(i===-1)return;
+  db.ambassador[i].stato=db.ambassador[i].stato==='attivo'?'sospeso':'attivo';SDB(db);
+  showToast(db.ambassador[i].stato==='sospeso'?'Ambassador sospeso':'Ambassador riattivato');renderAdmin();
+}
+
+function eliminaAmb(id){const db=DB();db.ambassador=db.ambassador.filter(a=>a.id!==id);SDB(db);showToast('Eliminato');renderAdmin()}
+function eliminaProspect(id){const db=DB();db.prospect=(db.prospect||[]).filter(p=>p.id!==id);SDB(db);showToast('Eliminato');renderAdmin()}
+function eliminaLead(id){const db=DB();db.leads=db.leads.filter(l=>l.id!==id);SDB(db);showToast('Eliminato');renderAdmin()}
+
+function openModAmb(id){
+  const db=DB(),a=db.ambassador.find(x=>x.id===id);if(!a)return;
+  EDIT_AMB=id;
+  document.getElementById('mmaTitolo').textContent=`${a.nome} ${a.cognome}`;
+  document.getElementById('mmaSub').textContent=`Codice: ${a.codice||'—'} • ${a.zona}`;
+  hideErr('mmaError');
+  document.getElementById('mmaBody').innerHTML=`
+    <div class="field"><label>Nome</label><input type="text" id="ma_nome" value="${a.nome}"/></div>
+    <div class="field"><label>Cognome</label><input type="text" id="ma_cog" value="${a.cognome}"/></div>
+    <div class="field"><label>Categoria</label><select id="ma_cat">
+      ${Object.entries(CATEGORIE).map(([k,v])=>`<option value="${k}" ${a.categoria===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+    </select></div>
+    <div class="field"><label>Zona</label><input type="text" id="ma_zona" value="${a.zona}"/></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="ma_wa" value="${a.whatsapp}"/></div>
+    <div class="field"><label>IBAN</label><input type="text" id="ma_iban" value="${a.iban||''}"/></div>
+    <div class="field"><label>Codice</label><input type="text" id="ma_cod" value="${a.codice||''}" style="text-transform:uppercase"/></div>
+    <div class="field"><label>Reset password (vuoto = non cambia)</label><input type="text" id="ma_pass" placeholder="nuova password"/></div>
+    <div style="padding:12px;background:var(--sl);border-radius:10px;font-size:12px;color:var(--tm);line-height:1.9;margin-top:4px">
+      Lead: <strong style="color:var(--td)">${a.leadInviati||0}</strong> &nbsp;•&nbsp; 
+      Chiusi: <strong style="color:var(--verde)">${a.lavoriChiusi||0}</strong> &nbsp;•&nbsp; 
+      Incassato: <strong style="color:var(--oro)">€${a.incassato||0}</strong>
+    </div>`;
+  openModal('modalModAmb');
+}
+
+function salvaAmb(){
+  hideErr('mmaError');
+  if(!EDIT_AMB)return;
+  const db=DB(),i=db.ambassador.findIndex(a=>a.id===EDIT_AMB);if(i===-1)return;
+  const cod=document.getElementById('ma_cod').value.trim().toUpperCase();
+  if(cod&&db.ambassador.find(a=>a.codice===cod&&a.id!==EDIT_AMB)){showErr('mmaError','Codice già in uso da un altro ambassador');return}
+  db.ambassador[i].nome=document.getElementById('ma_nome').value.trim();
+  db.ambassador[i].cognome=document.getElementById('ma_cog').value.trim();
+  db.ambassador[i].categoria=document.getElementById('ma_cat').value;
+  db.ambassador[i].zona=document.getElementById('ma_zona').value.trim();
+  db.ambassador[i].whatsapp=document.getElementById('ma_wa').value.trim();
+  db.ambassador[i].iban=document.getElementById('ma_iban').value.trim();
+  if(cod)db.ambassador[i].codice=cod;
+  const np=document.getElementById('ma_pass').value.trim();
+  if(np){
+    if(np.length<6){showErr('mmaError','La password deve avere almeno 6 caratteri');return}
+    db.ambassador[i].password=hashSimple(np);
+  }
+  // FIX BUG 3: se l'ambassador loggato ha modificato se stesso, aggiorna ME
+  if(ME&&ME.role==='ambassador'&&ME.id===EDIT_AMB){ME={...db.ambassador[i],role:'ambassador'}}
+  SDB(db);closeModal('modalModAmb');showToast('Salvato ✓');renderAdmin();
+}
+
+function aggiungiAmb(){
+  hideErr('naError');
+  const nome=document.getElementById('naNome').value.trim();
+  const cog=document.getElementById('naCognome').value.trim();
+  const cat=document.getElementById('naCategoria').value;
+  const zona=document.getElementById('naZona').value.trim();
+  const wa=document.getElementById('naWhatsapp').value.trim();
+  const iban=document.getElementById('naIban').value.trim();
+  const pass=document.getElementById('naPass').value.trim();
+  let cod=document.getElementById('naCodice').value.trim().toUpperCase();
+  if(!nome||!cog||!zona||!wa||!pass){showErr('naError','Compila nome, cognome, zona, WhatsApp e password');return}
+  if(pass.length<3){showErr('naError','Password troppo corta');return}
+  const db=DB();
+  if(!cod)cod=generaCodice(cat,zona);
+  if(db.ambassador.find(a=>a.codice===cod)){showErr('naError','Codice già in uso — lascia vuoto per generarlo automaticamente');return}
+  db.ambassador.push({id:Date.now(),nome,cognome:cog,categoria:cat,zona,whatsapp:wa,iban,password:hashSimple(pass),codice:cod,stato:'attivo',dataReg:new Date().toLocaleDateString('it-IT'),leadInviati:0,lavoriChiusi:0,incassato:0,daIncassare:0});
+  SDB(db);closeModal('modalNuovoAmb');showToast(`✓ ${nome} aggiunto — ${cod}`);renderAdmin();
+  ['naNome','naCognome','naZona','naWhatsapp','naIban','naCodice','naPass'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+}
+
+// ============================================
+// AZIONI PROSPECT
+// ============================================
+function aggiungiProspect(){
+  hideErr('npError');
+  const nome=document.getElementById('npNome').value.trim();
+  const cat=document.getElementById('npCategoria').value;
+  const zona=document.getElementById('npZona').value.trim();
+  const wa=document.getElementById('npWhatsapp').value.trim();
+  const stato=document.getElementById('npStato').value;
+  const note=document.getElementById('npNote').value.trim();
+  if(!nome||!zona||!wa){showErr('npError','Inserisci nome, zona e WhatsApp');return}
+  const db=DB();
+  if(!db.prospect)db.prospect=[];
+  db.prospect.push({id:Date.now(),nome,categoria:cat,zona,whatsapp:wa,stato,note,dataContatto:new Date().toLocaleDateString('it-IT')});
+  SDB(db);closeModal('modalNuovoProspect');showToast(`${nome} aggiunto ✓`);renderAdmin();
+  ['npNome','npZona','npWhatsapp','npNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+}
+
+function openModProspect(id){
+  const db=DB(),p=(db.prospect||[]).find(x=>x.id===id);if(!p)return;
+  EDIT_PROSPECT=id;
+  document.getElementById('mmpTitolo').textContent=p.nome;
+  hideErr('mmpError');
+  document.getElementById('mmpBody').innerHTML=`
+    <div class="field"><label>Nome e Cognome</label><input type="text" id="mp_nome" value="${p.nome}"/></div>
+    <div class="field"><label>Categoria</label><select id="mp_cat">
+      ${Object.entries(CATEGORIE).map(([k,v])=>`<option value="${k}" ${p.categoria===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+    </select></div>
+    <div class="field"><label>Zona</label><input type="text" id="mp_zona" value="${p.zona}"/></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="mp_wa" value="${p.whatsapp}"/></div>
+    <div class="field"><label>Stato</label><select id="mp_stato">
+      <option value="ricontattare" ${p.stato==='ricontattare'?'selected':''}>Da ricontattare</option>
+      <option value="interessato" ${p.stato==='interessato'?'selected':''}>Interessato</option>
+      <option value="attesa" ${p.stato==='attesa'?'selected':''}>In attesa</option>
+    </select></div>
+    <div class="field"><label>Note</label><textarea id="mp_note" rows="3">${p.note||''}</textarea></div>`;
+  openModal('modalModProspect');
+}
+
+function salvaProspect(){
+  hideErr('mmpError');
+  if(!EDIT_PROSPECT)return;
+  const db=DB();if(!db.prospect)db.prospect=[];
+  const i=db.prospect.findIndex(p=>p.id===EDIT_PROSPECT);if(i===-1)return;
+  const nome=document.getElementById('mp_nome').value.trim();
+  if(!nome){showErr('mmpError','Il nome è obbligatorio');return}
+  db.prospect[i].nome=nome;
+  db.prospect[i].categoria=document.getElementById('mp_cat').value;
+  db.prospect[i].zona=document.getElementById('mp_zona').value.trim();
+  db.prospect[i].whatsapp=document.getElementById('mp_wa').value.trim();
+  db.prospect[i].stato=document.getElementById('mp_stato').value;
+  db.prospect[i].note=document.getElementById('mp_note').value.trim();
+  SDB(db);closeModal('modalModProspect');showToast('Salvato ✓');renderAdmin();
+}
+
+// FIX BUG 1 & 2: converti aggiorna tab correttamente
+function converti(){
+  if(!EDIT_PROSPECT)return;
+  const db=DB();if(!db.prospect)return;
+  const p=db.prospect.find(x=>x.id===EDIT_PROSPECT);if(!p)return;
+  const cod=generaCodice(p.categoria,p.zona);
+  db.ambassador.push({id:Date.now(),nome:p.nome,cognome:'',categoria:p.categoria,zona:p.zona,whatsapp:p.whatsapp,iban:'',password:hashSimple('feedet123'),codice:cod,stato:'pendente',dataReg:new Date().toLocaleDateString('it-IT'),leadInviati:0,lavoriChiusi:0,incassato:0,daIncassare:0});
+  const i=db.prospect.findIndex(x=>x.id===EDIT_PROSPECT);
+  if(i!==-1)db.prospect[i].stato='convertito';
+  SDB(db);closeModal('modalModProspect');
+  showToast(`${p.nome} convertito — codice provvisorio: ${cod}`);
+  // FIX BUG 1: switcha tab correttamente
+  TAB='pendenti';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabBtn=document.getElementById('tabBtnPendenti');
+  if(tabBtn)tabBtn.classList.add('active');
+  const tabMap={ambassador:'Ambassador',pendenti:'Pendenti',prospect:'Prospect',leads:'Leads',impostazioni:'Impostazioni'};
+  Object.keys(tabMap).forEach(k=>{const div=document.getElementById('tab'+tabMap[k]);if(div)div.style.display=k==='pendenti'?'block':'none'});
+  renderAdmin();
+}
+
+// ============================================
+// AZIONI LEAD
+// ============================================
+function aggiungiLead(){
+  hideErr('nlError');
+  const cliente=document.getElementById('nlCliente').value.trim();
+  const contatto=document.getElementById('nlContatto').value.trim();
+  const tipo=document.getElementById('nlTipo').value;
+  const orig=parseFloat(document.getElementById('nlOrig').value)||null;
+  const cod=document.getElementById('nlCodice').value.trim().toUpperCase();
+  const fonte=document.getElementById('nlFonte').value;
+  const link=document.getElementById('nlLink').value.trim()||null;
+  const note=document.getElementById('nlNote').value.trim()||null;
+  if(!cliente||!cod){showErr('nlError','Nome cliente e codice ambassador sono obbligatori');return}
+  const db=DB();
+  const ai=db.ambassador.findIndex(a=>a.codice===cod&&a.stato==='attivo');
+  if(ai===-1){showErr('nlError','Codice non trovato o ambassador non attivo. Controlla il codice.');return}
+  db.leads.push({id:Date.now(),cliente,contatto,tipoLavoro:tipo,prevOriginale:orig,prevAlternativo:null,calc:{},codiceAmb:cod,fonte,linkAllegati:link,artigiano:null,dataLavoro:null,note,stepsCompletati:['ricevuto'],dataCreazione:new Date().toLocaleDateString('it-IT')});
+  db.ambassador[ai].leadInviati=(db.ambassador[ai].leadInviati||0)+1;
+  SDB(db);closeModal('modalNuovoLead');showToast('Lead aggiunto ✓');renderAdmin();
+  ['nlCliente','nlContatto','nlOrig','nlCodice','nlLink','nlNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+}
+
+// FIX BUG 2: toggleStep con logica inversa corretta
+function toggleStep(leadId,stepKey){
+  const db=DB(),i=db.leads.findIndex(l=>l.id===leadId);if(i===-1)return;
+  const comp=db.leads[i].stepsCompletati||[];
+  const idx=comp.indexOf(stepKey);
+
+  if(idx!==-1){
+    // Rimozione step
+    comp.splice(idx,1);
+    // FIX BUG 2: decrementa contatori se si rimuove pagato_ambassador
+    if(stepKey==='pagato_ambassador'){
+      const ci=db.ambassador.findIndex(a=>a.codice===db.leads[i].codiceAmb);
+      if(ci!==-1){
+        db.ambassador[ci].lavoriChiusi=Math.max(0,(db.ambassador[ci].lavoriChiusi||1)-1);
+        db.ambassador[ci].incassato=Math.max(0,(db.ambassador[ci].incassato||0)-(db.leads[i].calc?.commAmb||0));
+      }
+    }
+  }else{
+    // Aggiunta step
+    comp.push(stepKey);
+    if(stepKey==='pagato_ambassador'){
+      const ci=db.ambassador.findIndex(a=>a.codice===db.leads[i].codiceAmb);
+      if(ci!==-1){
+        db.ambassador[ci].lavoriChiusi=(db.ambassador[ci].lavoriChiusi||0)+1;
+        db.ambassador[ci].incassato=(db.ambassador[ci].incassato||0)+(db.leads[i].calc?.commAmb||0);
+      }
+    }
+  }
+
+  db.leads[i].stepsCompletati=comp;
+  SDB(db);renderAdmin();showToast('Aggiornato');
+}
+
+function openModLead(id){
+  const db=DB(),lead=db.leads.find(l=>l.id===id);if(!lead)return;
+  EDIT_LEAD=id;
+  hideErr('mmlError');
+  document.getElementById('mmlSub').textContent=`#${String(id).slice(-4)} — ${lead.tipoLavoro}`;
+  const ambOpts=db.ambassador.filter(a=>a.stato==='attivo').map(a=>`<option value="${a.codice}" ${a.codice===lead.codiceAmb?'selected':''}>${a.codice} — ${a.nome} ${a.cognome}</option>`).join('');
+  document.getElementById('mmlBody').innerHTML=`
+    <div class="field"><label>Nome cliente</label><input type="text" id="ml_cli" value="${lead.cliente||''}"/></div>
+    <div class="field"><label>Contatto cliente</label><input type="tel" id="ml_cont" value="${lead.contatto||''}"/></div>
+    <div class="field"><label>Tipo lavoro</label><select id="ml_tipo">
+      <option ${lead.tipoLavoro==='Sostituzione caldaia'?'selected':''}>Sostituzione caldaia</option>
+      <option ${lead.tipoLavoro==='Installazione caldaia'?'selected':''}>Installazione caldaia</option>
+      <option ${lead.tipoLavoro==='Climatizzatore'?'selected':''}>Climatizzatore</option>
+      <option ${lead.tipoLavoro==='Impianto idraulico'?'selected':''}>Impianto idraulico</option>
+      <option ${lead.tipoLavoro==='Riparazione'?'selected':''}>Riparazione</option>
+      <option ${lead.tipoLavoro==='Impianto riscaldamento'?'selected':''}>Impianto riscaldamento</option>
+    </select></div>
+    <div class="field"><label>Prev. originale (€)</label><input type="number" id="ml_orig" value="${lead.prevOriginale||''}" onchange="aggiornaCifre()"/></div>
+    <div class="field"><label>Prev. alternativo (€)</label><input type="number" id="ml_alt" value="${lead.prevAlternativo||''}" onchange="aggiornaCifre()"/></div>
+    <div id="ml_preview" style="margin-bottom:12px"></div>
+    <div class="field"><label>Ambassador</label><select id="ml_amb">${ambOpts||'<option>Nessun ambassador attivo</option>'}</select></div>
+    <div class="field"><label>Fonte</label><select id="ml_fonte">
+      ${Object.entries(FONTI).map(([k,v])=>`<option value="${k}" ${lead.fonte===k?'selected':''}>${v}</option>`).join('')}
+    </select></div>
+    <div class="field"><label>Link allegati Drive</label><input type="url" id="ml_link" value="${lead.linkAllegati||''}"/></div>
+    <div class="field"><label>Artigiano</label><input type="text" id="ml_art" value="${lead.artigiano||''}" placeholder="Nome e contatto artigiano"/></div>
+    <div class="field"><label>Data lavoro programmata</label><input type="text" id="ml_data" value="${lead.dataLavoro||''}" placeholder="es. 15/06/2025"/></div>
+    <div class="field"><label>Note</label><textarea id="ml_note" rows="3">${lead.note||''}</textarea></div>`;
+  aggiornaCifre();
+  openModal('modalModLead');
+}
+
+function aggiornaCifre(){
+  const o=parseFloat(document.getElementById('ml_orig')?.value)||0;
+  const a=parseFloat(document.getElementById('ml_alt')?.value)||0;
+  const p=document.getElementById('ml_preview');if(!p)return;
+  if(!o||!a||a>=o){p.innerHTML='';return}
+  const c=calcComm(o,a);
+  p.innerHTML=`<div style="background:var(--sl);border-radius:10px;padding:12px;font-size:12px;line-height:2;color:var(--tm)">
+    Risparmio lordo: <strong style="color:var(--td)">€${c.risparmio}</strong><br/>
+    Fascia commissione: <strong style="color:var(--td)">${c.pct}%</strong><br/>
+    Commissione Feedet: <strong style="color:var(--accent)">€${c.commFeedet}</strong><br/>
+    Quota ambassador (25%): <strong style="color:var(--oro)">€${c.commAmb}</strong><br/>
+    Prezzo finale cliente: <strong style="color:var(--verde)">€${c.prezzoFinale}</strong><br/>
+    Risparmio netto cliente: <strong style="color:var(--verde)">€${c.risparmiNetto}</strong>
+  </div>`;
+}
+
+function salvaLead(){
+  hideErr('mmlError');
+  if(!EDIT_LEAD)return;
+  const db=DB(),i=db.leads.findIndex(l=>l.id===EDIT_LEAD);if(i===-1)return;
+  const cliente=document.getElementById('ml_cli').value.trim();
+  if(!cliente){showErr('mmlError','Il nome cliente è obbligatorio');return}
+  const o=parseFloat(document.getElementById('ml_orig').value)||0;
+  const a=parseFloat(document.getElementById('ml_alt').value)||0;
+  if(a>0&&o>0&&a>=o){showErr('mmlError','Il preventivo alternativo deve essere inferiore all\'originale');return}
+  db.leads[i].cliente=cliente;
+  db.leads[i].contatto=document.getElementById('ml_cont').value.trim();
+  db.leads[i].tipoLavoro=document.getElementById('ml_tipo').value;
+  db.leads[i].prevOriginale=o||null;
+  db.leads[i].prevAlternativo=a||null;
+  db.leads[i].calc=o&&a?calcComm(o,a):{};
+  db.leads[i].codiceAmb=document.getElementById('ml_amb').value;
+  db.leads[i].fonte=document.getElementById('ml_fonte').value;
+  db.leads[i].linkAllegati=document.getElementById('ml_link').value.trim()||null;
+  db.leads[i].artigiano=document.getElementById('ml_art').value.trim()||null;
+  db.leads[i].dataLavoro=document.getElementById('ml_data').value.trim()||null;
+  db.leads[i].note=document.getElementById('ml_note').value.trim()||null;
+  SDB(db);closeModal('modalModLead');showToast('Lead salvato ✓');renderAdmin();
+}
+
+// FIX BUG 6: riassegnaLead triggera re-render
+function riassegnaLead(id,cod){
+  const db=DB(),i=db.leads.findIndex(l=>l.id===id);
+  if(i!==-1){db.leads[i].codiceAmb=cod;SDB(db);showToast('Riassegnato ✓');renderAdmin()}
+}
+
+// ============================================
+// EXPORT CSV (FIX BUG 9)
+// ============================================
+function exportCSV(tipo){
+  const db=DB();
+  let content='',filename='';
+  if(tipo==='ambassador'||tipo===undefined){
+    const list=db.ambassador.filter(a=>a.stato==='attivo');
+    if(!list.length){showToast('Nessun dato da esportare');return}
+    content='Nome,Cognome,Categoria,Zona,WhatsApp,IBAN,Codice,Lead,Chiusi,Incassato,DataReg\n'+
+      list.map(a=>`${a.nome},${a.cognome},${CATEGORIE[a.categoria]?.label||a.categoria},${a.zona},${a.whatsapp},${a.iban||''},${a.codice},${a.leadInviati||0},${a.lavoriChiusi||0},${a.incassato||0},${a.dataReg}`).join('\n');
+    filename='feedet-ambassador.csv';
+  }else if(tipo==='leads'){
+    if(!db.leads.length){showToast('Nessun lead da esportare');return}
+    content='ID,Cliente,Contatto,Tipo,PrevOrig,PrevAlt,CommFeedet,CommAmb,Ambassador,Fonte,Data\n'+
+      db.leads.map(l=>`#${String(l.id).slice(-4)},${l.cliente||''},${l.contatto||''},${l.tipoLavoro},${l.prevOriginale||''},${l.prevAlternativo||''},${l.calc?.commFeedet||''},${l.calc?.commAmb||''},${l.codiceAmb||''},${FONTI[l.fonte]||''},${l.dataCreazione}`).join('\n');
+    filename='feedet-leads.csv';
+  }else if(tipo==='prospect'){
+    const list=db.prospect||[];
+    if(!list.length){showToast('Nessun prospect da esportare');return}
+    content='Nome,Categoria,Zona,WhatsApp,Stato,Note,DataContatto\n'+
+      list.map(p=>`${p.nome},${CATEGORIE[p.categoria]?.label||p.categoria},${p.zona},${p.whatsapp},${p.stato},"${(p.note||'').replace(/"/g,"'")}",${p.dataContatto}`).join('\n');
+    filename='feedet-prospect.csv';
+  }
+  const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV esportato ✓');
+}
+
+// ============================================
+// FAB
+// ============================================
+function onFab(){
+  if(TAB==='ambassador'||TAB==='pendenti')openModal('modalNuovoAmb');
+  else if(TAB==='prospect')openModal('modalNuovoProspect');
+  else openModal('modalNuovoLead');
+}
+
+// ============================================
+// MODAL / CONFIRM
+// ============================================
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',function(e){if(e.target===this)closeModal(this.id)}));
+
+function confirmElimina(tipo,id,nome){
+  document.getElementById('confirmTitle').textContent='Elimina '+tipo;
+  document.getElementById('confirmText').textContent=`Stai per eliminare "${nome}". Questa azione non può essere annullata.`;
+  confirmCB=()=>{if(tipo==='ambassador')eliminaAmb(id);else if(tipo==='prospect')eliminaProspect(id);else eliminaLead(id)};
+  document.getElementById('confirmDialog').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmDialog').classList.remove('show');confirmCB=null}
+document.getElementById('confirmOk').onclick=function(){if(confirmCB)confirmCB();closeConfirm()};
+
+// ============================================
+// TOAST
+// ============================================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ============================================
+// DEMO DATA
+// ============================================
+function loadDemo(){
+  try{
+    const db=DB();if(db.ambassador.length>0)return;
+    const c1=calcComm(2400,1500),c2=calcComm(1800,1200);
+    db.ambassador=[
+      {id:1001,nome:'Marco',cognome:'Ferretti',categoria:'CUS',zona:'Milano Zona 5',whatsapp:'+39 333 111 2233',iban:'IT60 X054 2811 0001',password:hashSimple('ferretti123'),codice:'FD-CUS-5',stato:'attivo',dataReg:'02/05/2025',leadInviati:3,lavoriChiusi:1,incassato:Math.round(c1.commAmb),daIncassare:0},
+      {id:1002,nome:'Giulia',cognome:'Marchetti',categoria:'IMM',zona:'Milano Navigli',whatsapp:'+39 347 222 3344',iban:'IT60 X054 2811 0002',password:hashSimple('marchetti123'),codice:'FD-IMM-1',stato:'attivo',dataReg:'10/05/2025',leadInviati:2,lavoriChiusi:0,incassato:0,daIncassare:0},
+      {id:1003,nome:'Roberto',cognome:'Conti',categoria:'AMM',zona:'Milano Zona 3',whatsapp:'+39 339 333 4455',iban:'IT60 X054 2811 0003',password:hashSimple('conti123'),codice:'FD-AMM-3',stato:'attivo',dataReg:'15/05/2025',leadInviati:1,lavoriChiusi:0,incassato:0,daIncassare:0},
+      {id:1004,nome:'Carla',cognome:'Bianchi',categoria:'CUS',zona:'Milano Zona 7',whatsapp:'+39 366 444 5566',iban:'IT60 X054 2811 0004',password:hashSimple('bianchi123'),codice:'FD-CUS-7',stato:'sospeso',dataReg:'18/05/2025',leadInviati:0,lavoriChiusi:0,incassato:0,daIncassare:0},
+      {id:1005,nome:'Federica',cognome:'Gallo',categoria:'IMM',zona:'Milano Zona 2',whatsapp:'+39 348 666 7788',iban:'IT60 X054 2811 0005',password:hashSimple('gallo123'),codice:null,stato:'pendente',dataReg:'01/06/2025',leadInviati:0,lavoriChiusi:0,incassato:0,daIncassare:0},
+    ];
+    db.prospect=[
+      {id:2001,nome:'Luca Bernardi',categoria:'IMM',zona:'Milano Porta Romana',whatsapp:'+39 333 999 1122',stato:'interessato',note:'Incontrato in agenzia. Molto curioso, vuole capire come funziona prima di impegnarsi. Ricontattare giovedì.',dataContatto:'01/06/2025'},
+      {id:2002,nome:'Anna Ricci',categoria:'AMM',zona:'Sesto San Giovanni',whatsapp:'+39 347 888 2233',stato:'attesa',note:'Ha chiesto di mandare materiale informativo. Mandato il volantino su WhatsApp.',dataContatto:'02/06/2025'},
+      {id:2003,nome:'Stefano Neri',categoria:'GEO',zona:'Cinisello Balsamo',whatsapp:'+39 320 777 3344',stato:'ricontattare',note:'Occupato in cantiere. Richiamare la prossima settimana.',dataContatto:'03/06/2025'},
+    ];
+    db.leads=[
+      {id:3001,cliente:'Giovanni Sala',contatto:'+39 333 999 0011',tipoLavoro:'Sostituzione caldaia',prevOriginale:2400,prevAlternativo:1500,calc:c1,codiceAmb:'FD-CUS-5',fonte:'biglietto',linkAllegati:'https://drive.google.com',artigiano:'Lorenzo B. +39 333 000 9999',dataLavoro:'10/06/2025',note:'Cliente urgente, caldaia rotta da 3 giorni',stepsCompletati:['ricevuto','allegati','in_analisi','alternativo_pronto','cliente_contattato','accettato','artigiano_assegnato','lavoro_programmato','lavoro_eseguito','incassato_cliente','pagato_artigiano','pagato_ambassador'],dataCreazione:'05/05/2025'},
+      {id:3002,cliente:'Maria Colombo',contatto:'+39 347 888 0022',tipoLavoro:'Climatizzatore',prevOriginale:1800,prevAlternativo:1200,calc:c2,codiceAmb:'FD-CUS-5',fonte:'passaparola',linkAllegati:null,artigiano:'Jesus R. +39 333 111 8888',dataLavoro:'20/06/2025',note:null,stepsCompletati:['ricevuto','allegati','in_analisi','alternativo_pronto','cliente_contattato','accettato','artigiano_assegnato','lavoro_programmato'],dataCreazione:'12/05/2025'},
+      {id:3003,cliente:'Paolo Ferrara',contatto:'+39 366 777 0033',tipoLavoro:'Impianto idraulico',prevOriginale:900,prevAlternativo:null,calc:{},codiceAmb:'FD-IMM-1',fonte:'whatsapp',linkAllegati:'https://drive.google.com',artigiano:null,dataLavoro:null,note:'Perdita sotto il lavandino, vuole capire se il prezzo è giusto',stepsCompletati:['ricevuto','allegati','in_analisi'],dataCreazione:'01/06/2025'},
+      {id:3004,cliente:'Sara Negri',contatto:'+39 320 666 0044',tipoLavoro:'Sostituzione caldaia',prevOriginale:1500,prevAlternativo:null,calc:{},codiceAmb:'FD-AMM-3',fonte:'adesivo',linkAllegati:null,artigiano:null,dataLavoro:null,note:null,stepsCompletati:['ricevuto'],dataCreazione:'02/06/2025'},
+    ];
+    SDB(db);
+  }catch(e){console.error('loadDemo error:',e)}
+}
+loadDemo();
+</script>
+</body>
+</html>
